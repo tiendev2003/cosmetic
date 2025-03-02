@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import MainNav2Logged from "./MainNav2Logged";
 
 export interface HeaderLoggedProps {}

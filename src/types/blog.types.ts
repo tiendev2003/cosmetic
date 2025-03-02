@@ -1,5 +1,6 @@
-import { BlogCategory } from './blogCategory.types';
-import { UserInfo } from './auth.types';
+import { UserInfo } from "./auth.types";
+import { BlogCategory } from "./blogCategory.types";
+import { Pagination } from "./pagination.types";
 
 // Model cho Tag (giả định cấu trúc cơ bản)
 export interface Tag {
@@ -21,8 +22,12 @@ export interface Blog {
   tags: Tag[]; // Quan hệ ManyToMany với Tag, ánh xạ thành mảng
 }
 
-// Type cho danh sách blog (response từ API)
-export type BlogListResponse = Blog[];
+export interface BlogListResponse {
+  status: string;
+  message: string;
+  data: Blog[];
+  pagination: Pagination;
+}
 
 // Type cho chi tiết blog (response từ API)
 export type BlogDetailsResponse = Blog;

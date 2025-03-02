@@ -9,7 +9,7 @@ export interface AuthState {
 
 // Định nghĩa kiểu cho thông tin người dùng
 export interface UserInfo {
-  id: string;
+  id: number;
   username: string;
   email: string;
   avatar: string;
@@ -33,6 +33,11 @@ export interface RegisterCredentials {
 
 // Định nghĩa kiểu cho response của login (dùng type vì có thể là union)
 export type LoginResponse = {
-  userInfo: UserInfo;
-  userToken: string;
+  data: string;
 };
+
+export interface UserRequest {
+  username: string;
+  bio: string;
+  phone: string;
+}

@@ -1,10 +1,27 @@
 import { Toaster } from "react-hot-toast";
+import { useSelector } from "react-redux";
 import { BrowserRouter, Route, Routes } from "react-router";
 import AccountBilling from "../containers/AccountPage/AccountBilling";
 import AccountOrder from "../containers/AccountPage/AccountOrder";
 import AccountPage from "../containers/AccountPage/AccountPage";
 import AccountPass from "../containers/AccountPage/AccountPass";
 import AccountSavelists from "../containers/AccountPage/AccountSavelists";
+import AddBlog from "../containers/Admin/Blog/AddBlog";
+import ListBlog from "../containers/Admin/Blog/ListBlog";
+import AddBlogCategory from "../containers/Admin/BlogCategory/AddBlogCategory";
+import ListBlogCategory from "../containers/Admin/BlogCategory/ListBlogCategory";
+import AddBrand from "../containers/Admin/Brand/AddBrand";
+import ListBrand from "../containers/Admin/Brand/ListBrand";
+import AddCategories from "../containers/Admin/Categories/AddCategories";
+import ListCategies from "../containers/Admin/Categories/ListCategies";
+import DashboardPage from "../containers/Admin/Dashboard/DashboardPage";
+import AddDiscount from "../containers/Admin/Discount/AddDiscount";
+import ListDiscount from "../containers/Admin/Discount/ListDiscount";
+import DetailOrder from "../containers/Admin/Order/DetailOrder";
+import ListOrder from "../containers/Admin/Order/ListOrder";
+import AddProduct from "../containers/Admin/Products/AddProduct";
+import ListProduct from "../containers/Admin/Products/ListProduct";
+import ListUser from "../containers/Admin/Users/ListUser";
 import BlogPage from "../containers/BlogPage/BlogPage";
 import BlogSingle from "../containers/BlogPage/BlogSingle";
 import Page404 from "../containers/Page404/Page404";
@@ -21,7 +38,9 @@ import CartPage from "../containers/ProductDetailPage/CartPage";
 import ProductDetailPage from "../containers/ProductDetailPage/ProductDetailPage";
 import ProductDetailPage2 from "../containers/ProductDetailPage/ProductDetailPage2";
 import SiteHeader from "../containers/SiteHeader";
+import AdminLayout from "../layout/AdminLayout";
 import Footer from "../shared/Footer/Footer";
+import { RootState } from "../store";
 import ScrollToTop from "./ScrollToTop";
 import { Page } from "./types";
 
@@ -47,29 +66,150 @@ export const privatePages: Page[] = [
   { path: "/account-my-order", component: AccountOrder },
   { path: "/checkout", component: CheckoutPage },
   { path: "/cart", component: CartPage },
+]
 
+export const adminPages: Page[] = [
+  {
+    path: "/admin",
+    component: DashboardPage,
 
+  },
+  {
+    path: '/admin/brand',
+    component: ListBrand
+  },
+  {
+    path: '/admin/brand/add',
+    component: AddBrand
+  },
+  {
+    path: '/admin/brand/edit/:id',
+    component: AddBrand
+  },
+  {
+    path: "/admin/products",
+    component: ListProduct,
+  },
+  {
+    path: "/admin/products/add",
+    component: AddProduct,
+  },
+  {
+    path: "/admin/products/edit/:id",
+    component: AddProduct,
+  },
+  {
+    path: "/admin/categories",
+    component: ListCategies,
+  },
+  {
+    path: "/admin/categories/add",
+    component: AddCategories,
+  },
+  {
+    path: "/admin/categories/edit/:id",
+    component: AddCategories,
+  },
+  {
+    path: "/admin/discounts",
+    component: ListDiscount,
+  },
+  {
+    path: "/admin/discounts/add",
+    component: AddDiscount,
+  },
+  {
+    path: "/admin/discounts/edit/:id",
+    component: AddDiscount,
+  },
+  {
+    path: "/admin/orders",
+    component: ListOrder,
+  },
+  {
+    path: "/admin/orders/edit/:id",
+    component: DetailOrder,
+  },
+  {
+    path: "/admin/users",
+    component: ListUser,
+  },
+  {
+    path: "/admin/blog",
+    component: ListBlog
+  },
+  {
+    path: "/admin/blog/add",
+    component: AddBlog
+  },
+  {
+    path: "/admin/blog/edit/:id",
+    component: AddBlog
+  },
+  {
+    path: "/admin/blog-categories",
+    component: ListBlogCategory,
+  },
+  {
+    path: "/admin/blog-categories/add",
+    component: AddBlogCategory,
+  },
+  {
+    path: "/admin/blog-categories/edit/:id",
+    component: AddBlogCategory,
+  },
 ]
 
 const MyRoutes = () => {
+  const { userInfo } = useSelector((state: RootState) => state.auth);
   return (
     <BrowserRouter>
       <Toaster />
       <ScrollToTop />
-      <SiteHeader />
       <Routes>
+
         {pages.map(({ component: Component, path }, index) => {
-          return <Route key={index} element={<Component />} path={path} />;
-        })}
-        {privatePages.map(({ component: Component, path }, index) => {
-          return <Route key={index} element={<Component />} path={path} />;
+          return <Route key={index} element={<>
+            <SiteHeader />
+            <Component /> <Footer />
+          </>} path={path} />;
         })}
 
-        <Route path="/signup" element={<PageSignUp />} />
-        <Route path="/login" element={<PageLogin />} />
-        <Route path="*" element={<Page404 />} />
+        {
+          userInfo && userInfo.role !== null &&
+          privatePages.map(({ component: Component, path }, index) => {
+            return <Route key={index} element={<>
+              <SiteHeader />
+              <Component /> <Footer />
+            </>} path={path} />;
+          })}
+        <Route path="/" element={<AdminLayout />}>
+          {
+            userInfo && userInfo.role === "ADMIN" &&
+            adminPages.map(({ component: Component, path }, index) => {
+              return <Route key={index} element={<>
+                <Component />
+              </>} path={path} />;
+            })
+          }
+        </Route>
+
+
+        <Route path="/signup" element={<>
+          <SiteHeader />
+          <PageSignUp /> <Footer />
+        </>} />
+        <Route path="/login" element={<>
+          <SiteHeader />
+          <PageLogin /> <Footer />
+        </>} />
+        <Route path="*" element={<>
+          <SiteHeader />
+          <Page404 /> <Footer />
+        </>} />
       </Routes>
-      <Footer />
+
+
     </BrowserRouter>
   );
 };

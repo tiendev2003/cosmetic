@@ -1,13 +1,25 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AxiosError } from "axios";
 import api from "../../api/api";
-import { AuthState, LoginCredentials, LoginResponse, RegisterCredentials, UserInfo } from "../../types/index";
+import {
+  AuthState,
+  LoginCredentials,
+  LoginResponse,
+  RegisterCredentials,
+  UserInfo,
+  UserRequest,
+} from "../../types/index";
+import { uploadImage } from "../../utils/uploadImage";
 
 // Khởi tạo userToken từ localStorage
 const userToken = localStorage.getItem("userToken") || null;
 
 // Async thunk cho login
-export const userLogin = createAsyncThunk<LoginResponse, LoginCredentials, { rejectValue: string }>(
+export const userLogin = createAsyncThunk<
+  LoginResponse,
+  LoginCredentials,
+  { rejectValue: string }
+>(
   "auth/login",
   async ({ email, password }: LoginCredentials, { rejectWithValue }) => {
     try {
@@ -23,21 +35,30 @@ export const userLogin = createAsyncThunk<LoginResponse, LoginCredentials, { rej
         config
       );
 
-      localStorage.setItem("userToken", data.userToken);
+      localStorage.setItem("userToken", data.data);
       return data;
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       return rejectWithValue(
-        axiosError.response?.data.message || axiosError.message || "An error occurred"
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
       );
     }
   }
 );
 
 // Async thunk cho register
-export const registerUser = createAsyncThunk<void, RegisterCredentials, { rejectValue: string }>(
+export const registerUser = createAsyncThunk<
+  void,
+  RegisterCredentials,
+  { rejectValue: string }
+>(
   "auth/register",
-  async ({ username, email, password }: RegisterCredentials, { rejectWithValue }) => {
+  async (
+    { username, email, password }: RegisterCredentials,
+    { rejectWithValue }
+  ) => {
     try {
       const config = {
         headers: {
@@ -53,11 +74,83 @@ export const registerUser = createAsyncThunk<void, RegisterCredentials, { reject
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       return rejectWithValue(
-        axiosError.response?.data.message || axiosError.message || "An error occurred"
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
       );
     }
   }
 );
+
+export const updateUser = createAsyncThunk<
+  UserInfo,
+  UserRequest,
+  { rejectValue: string }
+>("auth/update", async (user: UserRequest, { rejectWithValue }) => {
+  try {
+    const { data } = await api.put<UserInfo>(`/api/user/update`, user);
+
+    return data.data;
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    return rejectWithValue(
+      axiosError.response?.data.message ||
+        axiosError.message ||
+        "An error occurred"
+    );
+  }
+});
+
+// change avatar
+export const changeAvatar = createAsyncThunk<
+  string,
+  FormData,
+  { rejectValue: string }
+>("auth/changeAvatar", async (formData: FormData, { rejectWithValue }) => {
+  try {
+    const urlavatar = await uploadImage(formData);
+    console.log(api.getUri() + "/api/" + urlavatar);
+    await api.put<UserInfo>(`/api/user/avatar`, {
+      avatar: api.getUri() + "/api" + urlavatar,
+    });
+
+    return api.getUri() + "/api" + urlavatar;
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    return rejectWithValue(
+      axiosError.response?.data.message ||
+        axiosError.message ||
+        "An error occurred"
+    );
+  }
+});
+
+export const changePassword = createAsyncThunk<
+  void,
+  { currentPassword: string; newPassword: string },
+  { rejectValue: string }
+>(
+  "auth/changePassword",
+  async ({ currentPassword, newPassword }, { rejectWithValue }) => {
+    try {
+      await api.post(`/api/user/change-password`, {
+        oldPassword: currentPassword,
+        newPassword :newPassword,
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
+    }
+  }
+);
+export const getUserInfo = createAsyncThunk("auth/getInfo", async () => {
+  const { data } = await api.get<UserInfo>(`/api/user/me`);
+  return data.data;
+});
 
 // Khởi tạo state
 const initialState: AuthState = {
@@ -82,7 +175,7 @@ const authSlice = createSlice({
       state.success = false;
     },
     setCredentials: (state, action: PayloadAction<UserInfo>) => {
-      state.userInfo = action.payload;
+      state.userInfo = action.payload.data;
     },
   },
   extraReducers: (builder) => {
@@ -91,12 +184,14 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(userLogin.fulfilled, (state, action: PayloadAction<LoginResponse>) => {
-        state.loading = false;
-        state.userInfo = action.payload.userInfo;
-        state.userToken = action.payload.userToken;
-        state.success = true;
-      })
+      .addCase(
+        userLogin.fulfilled,
+        (state, action: PayloadAction<LoginResponse>) => {
+          state.loading = false;
+          state.userToken = action.payload.data;
+          state.success = true;
+        }
+      )
       .addCase(userLogin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Login failed";
@@ -112,6 +207,56 @@ const authSlice = createSlice({
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Registration failed";
+      })
+      .addCase(updateUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        updateUser.fulfilled,
+        (state, action: PayloadAction<UserInfo>) => {
+          state.loading = false;
+          state.userInfo = action.payload;
+          state.success = true;
+        }
+      )
+      .addCase(updateUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Update failed";
+      })
+      .addCase(getUserInfo.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getUserInfo.fulfilled,
+        (state, action: PayloadAction<UserInfo>) => {
+          state.loading = false;
+          state.userInfo = action.payload;
+        }
+      )
+      .addCase(getUserInfo.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "Get user info failed";
+      })
+      .addCase(changeAvatar.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        changeAvatar.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.loading = false;
+          state.userInfo = {
+            ...state.userInfo!,
+            avatar: action.payload,
+          };
+          state.success = true;
+        }
+      )
+      .addCase(changeAvatar.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Change avatar failed";
       });
   },
 });

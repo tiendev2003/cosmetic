@@ -1,9 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import {
-    LoginCredentials,
-    LoginResponse,
-    RegisterCredentials,
-    UserInfo,
+  LoginCredentials,
+  LoginResponse,
+  RegisterCredentials,
+  UserInfo,
 } from "../../types";
 
 // Lấy base URL từ environment
@@ -20,7 +20,7 @@ export const authApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       // Ép kiểu getState để lấy userToken từ Redux store
       const state = getState() as { auth: { userToken: string | null } };
-      const token = state.auth.userToken;
+      const token =  localStorage.getItem("userToken") || state.auth.userToken;
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
       }
@@ -32,7 +32,7 @@ export const authApi = createApi({
     // Lấy thông tin user (query)
     getUserDetails: build.query<UserInfo, void>({
       query: () => ({
-        url: "api/user/profile",
+        url: "api/user/me",
         method: "GET",
       }),
       providesTags: ["User"], // Gắn tag cho cache

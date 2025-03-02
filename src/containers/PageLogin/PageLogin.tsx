@@ -1,9 +1,13 @@
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import { FC, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router";
+import { userLogin } from "../../features/auth/authSlice";
 import ButtonPrimary from "../../shared/Button/ButtonPrimary";
 import Input from "../../shared/Input/Input";
+import { AppDispatch } from "../../store";
 
 export interface PageLoginProps {
   className?: string;
@@ -12,9 +16,26 @@ export interface PageLoginProps {
 const PageLogin: FC<PageLoginProps> = ({ className = "" }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const dispatch: AppDispatch = useDispatch();
+  const navigate = useNavigate();
+  const onSubmit = async (data: any) => {
+    try {
+      await dispatch(userLogin({
+        email: data.email,
+        password: data.password
+      })).unwrap();
+      // load lại trang để cập nhật trạng thái đăng nhập
+      navigate("/");
+      window.location.reload();
+      toast.success("Đăng nhập thành công");
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+    } catch (error) {
+      console.error("Failed to login", error);
+      toast.error("Đăng nhập thất bại");
+
+    }
+
   };
 
   return (

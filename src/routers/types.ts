@@ -29,6 +29,29 @@ export interface LocationStates {
   "/forgot-pass"?: {};
   "/page404"?: {};
   "/lien-he"?: {};
+  "/admin"?: {};
+  "/admin/brand"?: {};
+  "/admin/brand/add"?: {};
+  "/admin/brand/edit/:id"?: {};
+  "/admin/products"?: {};
+  "/admin/products/add"?: {};
+  "/admin/products/edit/:id"?: {};
+  "/admin/categories"?: {};
+  "/admin/categories/add"?: {};
+  "/admin/categories/edit/:id"?: {};
+  "/admin/orders"?: {};
+  "/admin/orders/edit/:id"?: {};
+  "/admin/users"?: {};
+  "/admin/users/edit/:id"?: {};
+  "/admin/discounts"?: {};
+  "/admin/discounts/add"?: {};
+  "/admin/discounts/edit/:id"?: {};
+  "/admin/blog"?: {};
+  "/admin/blog/add"?: {};
+  "/admin/blog/edit/:id"?: {};
+  "/admin/blog-categories"?: {};
+  "/admin/blog-categories/add"?: {};
+  "/admin/blog-categories/edit/:id"?: {};
 }
 
 export type PathName = keyof LocationStates;

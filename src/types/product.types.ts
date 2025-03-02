@@ -1,5 +1,6 @@
 import { Brand } from './brand.types';
 import { Category } from './category.types';
+import { Pagination } from './pagination.types';
 import { Review } from './review.types';
 
 // Model cho ProductImage (giả định cấu trúc cơ bản)
@@ -32,8 +33,14 @@ export interface Product {
   updatedDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
 }
 
-// Type cho danh sách sản phẩm
-export type ProductListResponse = Product[];
+ 
+
+export interface ProductListResponse {
+  status: string;
+  message: string;
+  data: Product[];
+  pagination: Pagination;
+}
 
 // Type cho chi tiết sản phẩm
 export type ProductDetailsResponse = Product;

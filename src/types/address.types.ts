@@ -1,3 +1,5 @@
+import { Pagination } from "./pagination.types";
+
 export interface Address {
   id: number; // Long trong Java ánh xạ thành number trong TypeScript
   firstName: string;
@@ -13,5 +15,9 @@ export interface Address {
   updatedDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
 }
 
-// Type cho danh sách địa chỉ (response từ API)
-export type AddressListResponse = Address[];
+export interface AddressListResponse {
+  status: string;
+  message: string;
+  data: Address[];
+  pagination: Pagination;
+}

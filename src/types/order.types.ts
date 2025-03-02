@@ -1,5 +1,6 @@
-import { UserInfo } from './auth.types';
 import { Address } from './address.types';
+import { UserInfo } from './auth.types';
+import { Pagination } from './pagination.types';
 import { Product } from './product.types';
 
 // Enum cho OrderStatus (giả định các giá trị dựa trên backend)
@@ -34,8 +35,13 @@ export interface Order {
   orderItems: OrderItem[]; // Quan hệ OneToMany với OrderItem
 }
 
-// Type cho danh sách đơn hàng
-export type OrderListResponse = Order[];
+ 
+export interface OrderListResponse {
+  status: string;
+  message: string;
+  data: Order[];
+  pagination: Pagination;
+}
 
 // Type cho chi tiết đơn hàng
 export type OrderDetailsResponse = Order;

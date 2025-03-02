@@ -1,9 +1,13 @@
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import { FC, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router";
+import { registerUser } from "../../features/auth/authSlice";
 import ButtonPrimary from "../../shared/Button/ButtonPrimary";
 import Input from "../../shared/Input/Input";
+import { AppDispatch } from "../../store";
 
 export interface PageSignUpProps {
   className?: string;
@@ -12,9 +16,21 @@ export interface PageSignUpProps {
 const PageSignUp: FC<PageSignUpProps> = ({ className = "" }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [showPassword, setShowPassword] = useState(false);
-
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const dispatch: AppDispatch = useDispatch();
+  const navigate = useNavigate();
+  const onSubmit = async (data: any) => {
+    try {
+      await dispatch(registerUser({
+        username: data.username,
+        email: data.email,
+        password: data.password
+      })).unwrap();
+      navigate("/login");
+      toast.success("Đăng ký thành công");
+    } catch (error) {
+      console.error("Failed to register", error);
+      toast.error("Đăng ký thất bại");
+    }
   };
 
   return (

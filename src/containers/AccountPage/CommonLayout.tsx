@@ -28,10 +28,6 @@ const CommonLayout: FC<CommonLayoutProps> = ({ children }) => {
                 link: "/account",
               },
               {
-                name: "Save lists",
-                link: "/account-savelists",
-              },
-              {
                 name: " My order",
                 link: "/account-my-order",
               },
@@ -40,7 +36,7 @@ const CommonLayout: FC<CommonLayoutProps> = ({ children }) => {
                 link: "/account-change-password",
               },
               {
-                name: "Change Billing",
+                name: "Change Address",
                 link: "/account-billing",
               },
             ].map((item, index) => (
@@ -48,10 +44,9 @@ const CommonLayout: FC<CommonLayoutProps> = ({ children }) => {
                 key={index}
                 to={item.link}
                 className={({ isActive }) =>
-                  `block py-5 md:py-8 border-b-2 border-transparent flex-shrink-0  text-sm sm:text-base ${
-                    isActive
-                      ? "border-primary-500 font-medium text-slate-900 dark:text-slate-200"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                  `block py-5 md:py-8 border-b-2 border-transparent flex-shrink-0  text-sm sm:text-base ${isActive
+                    ? "border-primary-500 font-medium text-slate-900 dark:text-slate-200"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                   }`
                 }
               >

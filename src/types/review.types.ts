@@ -1,3 +1,5 @@
+import { Pagination } from "./pagination.types";
+
 // Model cho Review (giả định cấu trúc cơ bản)
 export interface Review {
   id: number; // Long trong Java ánh xạ thành number trong TypeScript
@@ -10,4 +12,11 @@ export interface Review {
   createdDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
   updatedDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
 }
-export type ReviewListResponse = Review[];
+ 
+
+export interface ReviewListResponse {
+  status: string;
+  message: string;
+  data: Review[];
+  pagination: Pagination;
+}
