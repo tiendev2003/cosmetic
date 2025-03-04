@@ -5,8 +5,14 @@ import authReducer from './../features/auth/authSlice';
 import blogReducer from './../features/blog/blogSlice';
 import blogCategoryReducer from './../features/blogCategory/blogCategorySlice';
 import brandReducer from './../features/brand/brandSlice';
+import cartReducer from './../features/cart/cartSlice';
 import categoryReducer from './../features/category/categorySlice';
+import discountReducer from './../features/discount/discountSlice';
+import orderReducer from './../features/order/orderSlice';
 import productReducer from './../features/product/productSlice';
+import tagReducer from './../features/tag/tagSlice';
+import userReducer from './../features/users/userSlice';
+import reportReducer from './../features/report/reportSlice';
 export const store = configureStore({
     reducer: {
         auth: authReducer,
@@ -16,6 +22,12 @@ export const store = configureStore({
         products: productReducer,
         blogCategories: blogCategoryReducer,
         blogs: blogReducer,
+        discounts: discountReducer,
+        tags: tagReducer,
+        orders: orderReducer,
+        users: userReducer,
+        carts: cartReducer,
+        report: reportReducer,
         [authApi.reducerPath]: authApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>

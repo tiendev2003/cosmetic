@@ -4,12 +4,14 @@ import { Address } from "../../types/address.types";
 
 interface AddressState {
   addresses: Address[];
+  address: Address | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: AddressState = {
   addresses: [],
+  address: null,
   loading: false,
   error: null,
 };
@@ -17,7 +19,7 @@ const initialState: AddressState = {
 export const fetchAddresses = createAsyncThunk(
   "address/fetchAddresses",
   async () => {
-    const response = await api.get("/api/addresses");
+    const response = await api.get("/api/address");
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -28,7 +30,7 @@ export const fetchAddresses = createAsyncThunk(
 export const addAddress = createAsyncThunk(
   "address/addAddress",
   async (newAddress: Address) => {
-    const response = await api.post("/api/addresses", newAddress);
+    const response = await api.post("/api/address", newAddress);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -39,7 +41,10 @@ export const addAddress = createAsyncThunk(
 export const updateAddress = createAsyncThunk(
   "address/updateAddress",
   async (updatedAddress: Address) => {
-    const response = await api.put(`/api/addresses/${updatedAddress.id}`, updatedAddress);
+    const response = await api.put(
+      `/api/address/${updatedAddress.id}`,
+      updatedAddress
+    );
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -50,11 +55,44 @@ export const updateAddress = createAsyncThunk(
 export const deleteAddress = createAsyncThunk(
   "address/deleteAddress",
   async (addressId: number) => {
-    const response = await api.delete(`/api/addresses/${addressId}`);
+    const response = await api.delete(`/api/address/${addressId}`);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
     return addressId;
+  }
+);
+
+export const fetchAddressById = createAsyncThunk(
+  "address/fetchAddressById",
+  async (addressId: number) => {
+    const response = await api.get(`/api/address/${addressId}`);
+    if (response.data.status === "error") {
+      throw new Error(response.data.message);
+    }
+    return response.data.data as Address;
+  }
+);
+
+export const setDefaultAddress = createAsyncThunk(
+  "address/setDefaultAddress",
+  async (addressId: number) => {
+    const response = await api.put(`/api/address/${addressId}/default`);
+    if (response.data.status === "error") {
+      throw new Error(response.data.message);
+    }
+    return addressId;
+  }
+);
+
+export const getAddressDefault= createAsyncThunk(
+  "address/getAddressDefault",
+  async () => {
+    const response = await api.get(`/api/address/default`);
+    if (response.data.status === "error") {
+      throw new Error(response.data.message);
+    }
+    return response.data.data as Address;
   }
 );
 
@@ -130,6 +168,62 @@ const addressSlice = createSlice({
       .addCase(deleteAddress.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to delete address";
+      })
+      .addCase(fetchAddressById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchAddressById.fulfilled,
+        (state, action: PayloadAction<Address>) => {
+          state.loading = false;
+          state.address = action.payload;
+        }
+      )
+      .addCase(fetchAddressById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch address";
+      })
+      .addCase(setDefaultAddress.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        setDefaultAddress.fulfilled,
+        (state, action: PayloadAction<number>) => {
+          state.loading = false;
+          const index = state.addresses.findIndex(
+            (address) => address.id === action.payload
+          );
+          if (index !== -1) {
+            state.addresses[index].default = true;
+            // các địa chỉ còn lại phải set default = false
+            state.addresses.forEach((address) => {
+              if (address.id !== action.payload) {
+                address.default = false;
+              }
+            });
+          }
+        }
+      )
+      .addCase(setDefaultAddress.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to set default address";
+      })
+      .addCase(getAddressDefault.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        getAddressDefault.fulfilled,
+        (state, action: PayloadAction<Address>) => {
+          state.loading = false;
+          state.address = action.payload;
+        }
+      )
+      .addCase(getAddressDefault.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to get default address";
       });
   },
 });

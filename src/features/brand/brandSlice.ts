@@ -1,10 +1,12 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { AxiosError } from "axios";
 import api from "../../api/api";
 import { Brand } from "../../types/brand.types";
 import { Pagination } from "../../types/pagination.types";
 
 interface BrandState {
   brands: Brand[];
+  brand: Brand | null;
   loading: boolean;
   error: string | null;
   pagination: Pagination | null;
@@ -13,25 +15,36 @@ interface BrandState {
 const initialState: BrandState = {
   brands: [],
   loading: false,
+  brand: null,
   error: null,
   pagination: null,
 };
 
 export const fetchBrands = createAsyncThunk(
   "brand/fetchBrands",
-  async ({ page = 1, search = "" }: { page?: number; search?: string }) => {
-    const response = await api.get(`/api/brands?page=${page}&search=${search}`);
+  async ({
+    page = 1,
+    search = "",
+    size = 10,
+  }: {
+    page?: number;
+    search?: string;
+    size?: number;
+  }) => {
+    const response = await api.get(
+      `/api/brand?page=${page - 1}&search=${search}&size=${size}`
+    );
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
-    return response.data as { data: Brand[], pagination: Pagination };
+    return response.data as { data: Brand[]; pagination: Pagination };
   }
 );
 
 export const addBrand = createAsyncThunk(
   "brand/addBrand",
   async (newBrand: Brand) => {
-    const response = await api.post("/api/brands", newBrand);
+    const response = await api.post("/api/brand", newBrand);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -42,7 +55,10 @@ export const addBrand = createAsyncThunk(
 export const updateBrand = createAsyncThunk(
   "brand/updateBrand",
   async (updatedBrand: Brand) => {
-    const response = await api.put(`/api/brands/${updatedBrand.id}`, updatedBrand);
+    const response = await api.put(
+      `/api/brand/${updatedBrand.id}`,
+      updatedBrand
+    );
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -52,12 +68,41 @@ export const updateBrand = createAsyncThunk(
 
 export const deleteBrand = createAsyncThunk(
   "brand/deleteBrand",
-  async (brandId: number) => {
-    const response = await api.delete(`/api/brands/${brandId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (brandId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/api/brand/${brandId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return brandId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return brandId;
+  }
+);
+
+export const fetchBrandById = createAsyncThunk(
+  "brand/fetchBrandById",
+  async (brandId: string, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/brand/${brandId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Brand;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
+    }
   }
 );
 
@@ -73,7 +118,10 @@ const brandSlice = createSlice({
       })
       .addCase(
         fetchBrands.fulfilled,
-        (state, action: PayloadAction<{ data: Brand[], pagination: Pagination }>) => {
+        (
+          state,
+          action: PayloadAction<{ data: Brand[]; pagination: Pagination }>
+        ) => {
           state.loading = false;
           state.brands = action.payload.data;
           state.pagination = action.payload.pagination;
@@ -87,13 +135,10 @@ const brandSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        addBrand.fulfilled,
-        (state, action: PayloadAction<Brand>) => {
-          state.loading = false;
-          state.brands.push(action.payload);
-        }
-      )
+      .addCase(addBrand.fulfilled, (state, action: PayloadAction<Brand>) => {
+        state.loading = false;
+        state.brands.push(action.payload);
+      })
       .addCase(addBrand.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to add brand";
@@ -102,18 +147,15 @@ const brandSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        updateBrand.fulfilled,
-        (state, action: PayloadAction<Brand>) => {
-          state.loading = false;
-          const index = state.brands.findIndex(
-            (brand) => brand.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.brands[index] = action.payload;
-          }
+      .addCase(updateBrand.fulfilled, (state, action: PayloadAction<Brand>) => {
+        state.loading = false;
+        const index = state.brands.findIndex(
+          (brand) => brand.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.brands[index] = action.payload;
         }
-      )
+      })
       .addCase(updateBrand.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to update brand";
@@ -134,6 +176,21 @@ const brandSlice = createSlice({
       .addCase(deleteBrand.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to delete brand";
+      })
+      .addCase(fetchBrandById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchBrandById.fulfilled,
+        (state, action: PayloadAction<Brand>) => {
+          state.loading = false;
+          state.brand = action.payload;
+        }
+      )
+      .addCase(fetchBrandById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch brand";
       });
   },
 });

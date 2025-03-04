@@ -1,11 +1,44 @@
 import { CheckIcon, NoSymbolIcon } from "@heroicons/react/24/outline";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
 import NcInputNumber from "../../components/NcInputNumber";
 import Prices from "../../components/Prices";
-import { Product, PRODUCTS } from "../../data/data";
+import { deleteCartItem, fetchCart, updateCartItem } from "../../features/cart/cartSlice";
 import ButtonPrimary from "../../shared/Button/ButtonPrimary";
+import { AppDispatch, RootState } from "../../store";
+import { CartItem } from "../../types";
+import formatCurrencyVND from "../../utils/formatMoney";
 
 const CartPage = () => {
+
+  const { cart, loading, error } = useSelector((state: RootState) => state.carts)
+  const dispatch: AppDispatch = useDispatch()
+  useEffect(() => {
+    dispatch(fetchCart())
+  }, [dispatch])
+  const handleRemoveCartItem = async (id: number) => {
+    try {
+      await dispatch(deleteCartItem(id)).unwrap();
+      toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
+    } catch (error) {
+      console.log(error);
+      toast.error("Có lỗi xảy ra khi xóa sản phẩm khỏi giỏ hàng");
+    }
+  }
+  const handleUpdateQuantity = async (id: number, quantity: number) => {
+    try {
+      await dispatch(updateCartItem({
+        productId: id,
+        quantity: quantity
+      })).unwrap();
+     } catch (error) {
+      console.log(error);
+      toast.error("Có lỗi xảy ra khi cập nhật số lượng sản phẩm trong giỏ hàng");
+    }
+  }
+
   const renderStatusSoldout = () => {
     return (
       <div className="rounded-full flex items-center justify-center px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
@@ -24,8 +57,8 @@ const CartPage = () => {
     );
   };
 
-  const renderProduct = (item: Product, index: number) => {
-    const { image, price, name } = item;
+  const renderProduct = (item: CartItem, index: number) => {
+    const { unitPrice, product, quantity } = item;
 
     return (
       <div
@@ -34,8 +67,8 @@ const CartPage = () => {
       >
         <div className="relative h-36 w-24 sm:w-32 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           <img
-            src={image}
-            alt={name}
+            src={product?.productImages[0].image || "/default-image.jpg"}
+            alt={product?.name || "Product Image"}
             className="h-full w-full object-contain object-center"
           />
           <Link to="/product-detail" className="absolute inset-0"></Link>
@@ -46,7 +79,7 @@ const CartPage = () => {
             <div className="flex justify-between ">
               <div className="flex-[1.5] ">
                 <h3 className="text-base font-semibold">
-                  <Link to="/product-detail">{name}</Link>
+                  <Link to={`/cua-hang/${product?.id}`}>{product?.name}</Link>
                 </h3>
                 <div className="mt-1.5 sm:mt-2.5 flex text-sm text-slate-600 dark:text-slate-300">
                   <div className="flex items-center space-x-1.5">
@@ -92,7 +125,7 @@ const CartPage = () => {
                       />
                     </svg>
 
-                    <span>{`Black`}</span>
+                    <span>{product?.brand?.name}</span>
                   </div>
                   <span className="mx-4 border-l border-slate-200 dark:border-slate-700 "></span>
                   <div className="flex items-center space-x-1.5">
@@ -127,58 +160,85 @@ const CartPage = () => {
                       />
                     </svg>
 
-                    <span>{`2XL`}</span>
+                    <span>{product?.category?.name}</span>
                   </div>
                 </div>
 
-                <div className="mt-3 flex justify-between w-full sm:hidden relative">
-                  <select
-                    name="qty"
-                    id="qty"
-                    className="form-select text-sm rounded-md py-1 border-slate-200 dark:border-slate-700 relative z-10 dark:bg-slate-800 "
-                  >
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                  </select>
-                  <Prices
-                    contentClass="py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium h-full"
-                    price={price}
-                  />
-                </div>
               </div>
 
               <div className="hidden sm:block text-center relative">
-                <NcInputNumber className="relative z-10" />
+                <NcInputNumber className="relative z-10" defaultValue={quantity} onChange={
+                  (value) => handleUpdateQuantity(item.id, value)
+                } />
               </div>
 
               <div className="hidden flex-1 sm:flex justify-end">
-                <Prices price={price} className="mt-0.5" />
+                <Prices price={unitPrice} className="mt-0.5" />
               </div>
             </div>
           </div>
 
           <div className="flex mt-auto pt-4 items-end justify-between text-sm">
-            {Math.random() > 0.6
+            {product?.stock < quantity
               ? renderStatusSoldout()
               : renderStatusInstock()}
 
-            <a
-              href="##"
+            <button
+              type="button"
+              onClick={() => handleRemoveCartItem(item.id)}
               className="relative z-10 flex items-center mt-3 font-medium text-primary-6000 hover:text-primary-500 text-sm "
             >
               <span>Remove</span>
-            </a>
+            </button>
           </div>
         </div>
       </div>
     );
   };
-
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  if (!cart || !cart.cartItems || cart.cartItems.length === 0) {
+    return (
+      <div className="nc-CartPage">
+        <title>Shopping Cart || fashionFactory Ecommerce Template</title>
+        <main className="container py-16 lg:pb-28 lg:pt-20">
+          <div className="mb-12 sm:mb-16">
+            <h2 className="block text-2xl sm:text-3xl lg:text-4xl font-semibold">
+              Giỏ hàng
+            </h2>
+            <div className="block mt-3 sm:mt-5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-400">
+              <Link to={"/#"} className="">
+                Trang chủ
+              </Link>
+              <span className="text-xs mx-1 sm:mx-1.5">/</span>
+              <span className="underline">Giỏ hàng</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-center min-h-[50vh] text-slate-700 dark:text-slate-300">
+            <div className="text-center">
+              <p className="text-lg">Giỏ hàng của bạn đang trống</p>
+              <Link
+                to="/cua-hang"
+                className="mt-4 inline-block text-primary-6000 hover:text-primary-500 font-medium"
+              >
+                Tiếp tục mua sắm
+              </Link>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
   return (
     <div className="nc-CartPage">
 
@@ -188,18 +248,15 @@ const CartPage = () => {
       <main className="container py-16 lg:pb-28 lg:pt-20 ">
         <div className="mb-12 sm:mb-16">
           <h2 className="block text-2xl sm:text-3xl lg:text-4xl font-semibold ">
-            Shopping Cart
+            Giỏ hàng
           </h2>
           <div className="block mt-3 sm:mt-5 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-400">
             <Link to={"/#"} className="">
-              Homepage
+              Trang chủ
             </Link>
             <span className="text-xs mx-1 sm:mx-1.5">/</span>
-            <Link to={"/#"} className="">
-              Clothing Categories
-            </Link>
-            <span className="text-xs mx-1 sm:mx-1.5">/</span>
-            <span className="underline">Shopping Cart</span>
+
+            <span className="underline">Giỏ hàng</span>
           </div>
         </div>
 
@@ -207,13 +264,12 @@ const CartPage = () => {
 
         <div className="flex flex-col lg:flex-row">
           <div className="w-full lg:w-[60%] xl:w-[55%] divide-y divide-slate-200 dark:divide-slate-700 ">
-            {[
-              PRODUCTS[0],
-              PRODUCTS[1],
-              PRODUCTS[2],
-              PRODUCTS[3],
-              PRODUCTS[4],
-            ].map(renderProduct)}
+            {
+              cart && cart?.cartItems?.length > 0 ? cart?.cartItems.map((item, index) => renderProduct(item, index)) : <div className="flex items-center justify-center   ">
+                <div className="text-red-500">Bạn chưa có sản phẩm nào cả</div>
+              </div>
+
+            }
           </div>
           <div className="border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-700 my-10 lg:my-0 lg:mx-10 xl:mx-16 2xl:mx-20 flex-shrink-0"></div>
           <div className="flex-1">
@@ -223,24 +279,24 @@ const CartPage = () => {
                 <div className="flex justify-between pb-4">
                   <span>Subtotal</span>
                   <span className="font-semibold text-slate-900 dark:text-slate-200">
-                    $249.00
+                    {
+                      formatCurrencyVND(cart?.cartItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0))
+
+                    }
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
-                  <span>Shpping estimate</span>
+                  <span>Phí ship</span>
                   <span className="font-semibold text-slate-900 dark:text-slate-200">
-                    $5.00
+                    {formatCurrencyVND(25000)}
                   </span>
                 </div>
-                <div className="flex justify-between py-4">
-                  <span>Tax estimate</span>
-                  <span className="font-semibold text-slate-900 dark:text-slate-200">
-                    $24.90
-                  </span>
-                </div>
+
                 <div className="flex justify-between font-semibold text-slate-900 dark:text-slate-200 text-base pt-4">
                   <span>Order total</span>
-                  <span>$276.00</span>
+                  <span>{
+                    formatCurrencyVND(cart?.cartItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0) + 25000)
+                  }</span>
                 </div>
               </div>
               <ButtonPrimary href="/checkout" className="mt-8 w-full">

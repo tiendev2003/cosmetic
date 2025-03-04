@@ -37,7 +37,7 @@ const CommonLayout: FC<CommonLayoutProps> = ({ children }) => {
               },
               {
                 name: "Change Address",
-                link: "/account-billing",
+                link: "/account-address",
               },
             ].map((item, index) => (
               <NavLink

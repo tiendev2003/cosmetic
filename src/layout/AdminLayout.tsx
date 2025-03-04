@@ -15,7 +15,10 @@ import {
     XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { NavLink, Outlet, useNavigate } from 'react-router';
+import { logout } from '../features/auth/authSlice';
+import { AppDispatch } from '../store';
 
 interface MenuItem {
     name: string;
@@ -91,15 +94,20 @@ function classNames(...classes: string[]) {
 }
 
 export default function AdminLayout() {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
     const navigation = generateNavigation();
-
+    const dispatch: AppDispatch = useDispatch()
+    const navigate = useNavigate();
     const toggleMenuItem = (name: string) => {
         setExpandedItems((prev) =>
             prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]
         );
     };
+    const handleLogout = () => {
+        dispatch(logout())
+        navigate('/login')
+    }
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -122,21 +130,37 @@ export default function AdminLayout() {
                         const Icon = item.icon;
                         return (
                             <div key={item.name}>
-                                <button
-                                    onClick={() => toggleMenuItem(item.name)}
-                                    className="flex justify-between items-center w-full px-4 py-3 hover:bg-gray-700"
-                                >
-                                    <div className="flex items-center">
-                                        <Icon className="h-5 w-5 mr-2" />
-                                        <span>{item.name}</span>
-                                    </div>
-                                    {item.children &&
-                                        (isExpanded ? (
+                                {item.children ? (
+                                    <button
+                                        onClick={() => toggleMenuItem(item.name)}
+                                        className="flex justify-between items-center w-full px-4 py-3 hover:bg-gray-700"
+                                    >
+                                        <div className="flex items-center">
+                                            <Icon className="h-5 w-5 mr-2" />
+                                            <span>{item.name}</span>
+                                        </div>
+                                        {isExpanded ? (
                                             <ChevronDownIcon className="h-4 w-4" />
                                         ) : (
                                             <ChevronRightIcon className="h-4 w-4" />
-                                        ))}
-                                </button>
+                                        )}
+                                    </button>
+                                ) : (
+                                    <NavLink
+                                        to={item.href}
+                                        className={({ isActive }) =>
+                                            classNames(
+                                                isActive ? 'bg-gray-800' : '',
+                                                'flex justify-between items-center w-full px-4 py-3 hover:bg-gray-700'
+                                            )
+                                        }
+                                    >
+                                        <div className="flex items-center">
+                                            <Icon className="h-5 w-5 mr-2" />
+                                            <span>{item.name}</span>
+                                        </div>
+                                    </NavLink>
+                                )}
                                 {isExpanded && item.children && (
                                     <div className="ml-6">
                                         {item.children.map((child) => (
@@ -184,20 +208,21 @@ export default function AdminLayout() {
                                 <Menu.Item>
                                     {({ active }) => (
                                         <NavLink
-                                            to="/profile"
+                                            to="/"
                                             className={classNames(
                                                 active ? 'bg-gray-100' : '',
                                                 'block px-4 py-2 text-gray-700'
                                             )}
                                         >
-                                            Profile
+                                            Trang chủ
                                         </NavLink>
                                     )}
                                 </Menu.Item>
                                 <Menu.Item>
                                     {({ active }) => (
                                         <NavLink
-                                            to="/logout"
+                                            to="#"
+                                            onClick={handleLogout}
                                             className={classNames(
                                                 active ? 'bg-gray-100' : '',
                                                 'block px-4 py-2 text-gray-700'

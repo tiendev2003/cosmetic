@@ -1,7 +1,10 @@
 import Glide from "@glidejs/glide";
-import { Product, PRODUCTS } from "../data/data";
 import { FC, useEffect, useId, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Heading from "../components/Heading/Heading";
+import { Product } from "../data/data";
+import { fetchNewArrivalsProducts, fetchTopSellingProducts } from "../features/product/productSlice";
+import { AppDispatch, RootState } from "../store";
 import ProductCard from "./ProductCard";
 
 export interface SectionSliderProductCardProps {
@@ -21,15 +24,25 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   headingClassName,
   heading,
   subHeading = "REY backpacks & bags",
-  data = PRODUCTS.filter((_, i) => i < 8 && i > 2),
 }) => {
   const sliderRef = useRef(null);
   const id = useId();
   const UNIQUE_CLASS = "glidejs" + id.replace(/:/g, "_");
 
+  const dispatch: AppDispatch = useDispatch();
+  const { productTopSelling, productArrivals } = useSelector((state: RootState) => state.products)
+  useEffect(() => {
+    dispatch(fetchTopSellingProducts());
+  
+
+  }, [dispatch,]);
+  useEffect(() => {
+    dispatch(fetchNewArrivalsProducts());
+  }, [dispatch,]);
+ 
   useEffect(() => {
     if (!sliderRef.current) {
-      return () => {};
+      return () => { };
     }
 
     // @ts-ignore
@@ -67,6 +80,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
     };
   }, [sliderRef, UNIQUE_CLASS]);
 
+
   return (
     <div className={`nc-SectionSliderProductCard ${className}`}>
       <div className={`${UNIQUE_CLASS} flow-root`} ref={sliderRef}>
@@ -80,11 +94,19 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
         </Heading>
         <div className="glide__track" data-glide-el="track">
           <ul className="glide__slides">
-            {data.map((item, index) => (
-              <li key={index} className={`glide__slide ${itemClassName}`}>
-                <ProductCard data={item} />
-              </li>
-            ))}
+            {
+              !heading ? productTopSelling 
+                .map((item, index) => (
+                  <li key={index} className={`glide__slide ${itemClassName}`}>
+                    <ProductCard product={item} />
+                  </li>
+                )) : productArrivals  
+                  .map((item, index) => (
+                    <li key={index} className={`glide__slide ${itemClassName}`}>
+                      <ProductCard product={item} />
+                    </li>
+                  ))
+            }
           </ul>
         </div>
       </div>

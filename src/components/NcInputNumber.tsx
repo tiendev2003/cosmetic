@@ -1,5 +1,5 @@
-import React, { FC, useEffect, useState } from "react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { FC, useEffect, useState } from "react";
 
 export interface NcInputNumberProps {
   className?: string;
@@ -59,11 +59,13 @@ const NcInputNumber: FC<NcInputNumberProps> = ({
   return (
     <div
       className={`nc-NcInputNumber flex items-center justify-between space-x-5 ${className}`}
+      // enable selection
     >
       {label && renderLabel()}
 
       <div
         className={`nc-NcInputNumber__content flex items-center justify-between w-[104px] sm:w-28`}
+
       >
         <button
           className="w-8 h-8 rounded-full flex items-center justify-center border border-neutral-400 dark:border-neutral-500 bg-white dark:bg-neutral-900 focus:outline-none hover:border-neutral-700 dark:hover:border-neutral-400 disabled:hover:border-neutral-400 dark:disabled:hover:border-neutral-500 disabled:opacity-50 disabled:cursor-default"

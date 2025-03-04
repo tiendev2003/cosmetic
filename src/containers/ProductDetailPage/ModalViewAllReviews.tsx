@@ -2,17 +2,19 @@ import { Dialog, Transition } from "@headlessui/react";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { FC, Fragment } from "react";
 import ReviewItem from "../../components/ReviewItem";
-import SortOrderFilter from "../../components/SectionGridMoreExplore/SortOrderFilter";
 import ButtonClose from "../../shared/ButtonClose/ButtonClose";
+import { Review } from "../../types";
 
 export interface ModalViewAllReviewsProps {
   show: boolean;
   onCloseModalViewAllReviews: () => void;
+  review?: Review[];
 }
 
 const ModalViewAllReviews: FC<ModalViewAllReviewsProps> = ({
   show,
   onCloseModalViewAllReviews,
+  review,
 }) => {
   return (
     <Transition appear show={show} as={Fragment}>
@@ -57,7 +59,7 @@ const ModalViewAllReviews: FC<ModalViewAllReviewsProps> = ({
                     className="text-lg font-medium leading-6 text-gray-900"
                     id="headlessui-dialog-title-70"
                   >
-                    View all reviews
+                    Xem tất cả review
                   </h3>
                   <span className="absolute left-3 top-3">
                     <ButtonClose onClick={onCloseModalViewAllReviews} />
@@ -66,29 +68,20 @@ const ModalViewAllReviews: FC<ModalViewAllReviewsProps> = ({
                 <div className="px-8 my-5 flex justify-between flex-wrap">
                   <h2 className="text-xl sm:text-2xl font-semibold flex items-center">
                     <StarIcon className="w-7 h-7 mb-0.5" />
-                    <span className="ml-1.5"> 4,87 · 142 Reviews</span>
+                    <span className="ml-1.5">  {
+                      review && review.length > 0 && Math.round
+
+                        (review?.reduce((acc, item) => acc + item.star, 0) ?? 0) / (review?.length ?? 1)
+                    }
+
+                      · {review?.length} đánh giá</span>
                   </h2>
-                  <SortOrderFilter
-                    className="my-2"
-                    data={[
-                      { name: "Sort order" },
-                      { name: "Newest rating" },
-                      { name: "Highest rating" },
-                      { name: "Lowest rating" },
-                    ]}
-                  />
+
                 </div>
                 <div className="px-8 py-8 border-t border-slate-200 dark:border-slate-700 overflow-auto grid grid-cols-1 md:grid-cols-2 gap-x-14 gap-y-10">
-                  <ReviewItem />
-                  <ReviewItem />
-                  <ReviewItem />
-                  <ReviewItem />
-                  <ReviewItem />
-                  <ReviewItem />
-                  <ReviewItem />
-                  <ReviewItem />
-                  <ReviewItem />
-                  <ReviewItem />
+                  {review?.map((item, index) => (
+                    <ReviewItem key={index} data={item} />
+                  ))}
                 </div>
               </div>
             </div>

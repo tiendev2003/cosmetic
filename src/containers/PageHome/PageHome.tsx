@@ -1,8 +1,10 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import BackgroundSection from "../../components/BackgroundSection/BackgroundSection";
 import DiscoverMoreSlider from "../../components/DiscoverMoreSlider";
 import Heading from "../../components/Heading/Heading";
 import SectionClientSay from "../../components/SectionClientSay/SectionClientSay";
-import SectionGridMoreExplore from "../../components/SectionGridMoreExplore/SectionGridMoreExplore";
 import SectionHero2 from "../../components/SectionHero/SectionHero2";
 import SectionHowItWork from "../../components/SectionHowItWork/SectionHowItWork";
 import SectionPromo1 from "../../components/SectionPromo1";
@@ -13,10 +15,18 @@ import SectionSliderLargeProduct from "../../components/SectionSliderLargeProduc
 import SectionSliderProductCard from "../../components/SectionSliderProductCard";
 import SectionMagazine5 from "../../containers/BlogPage/SectionMagazine5";
 import { PRODUCTS, SPORT_PRODUCTS } from "../../data/data";
+import { fetchBlogs, fetchNewBlog } from "../../features/blog/blogSlice";
 import ButtonSecondary from "../../shared/Button/ButtonSecondary";
-import SectionGridFeatureItems from "./SectionGridFeatureItems";
+import { AppDispatch, RootState } from "../../store";
 
 function PageHome() {
+  const dispatch: AppDispatch = useDispatch();
+  const { blogNew, blogs, loading, pagination, error } = useSelector((state: RootState) => state.blogs);
+const navigate = useNavigate();
+  useEffect(() => {
+    dispatch(fetchNewBlog());
+    dispatch(fetchBlogs({ page: 1, size: 10, search: "" }));
+  }, [dispatch]);
   return (
     <div className="nc-PageHome relative overflow-hidden">
       {/* SECTION HERO */}
@@ -45,15 +55,6 @@ function PageHome() {
         {/* SECTION */}
         <SectionPromo1 />
 
-        {/* SECTION */}
-        <div className="relative py-24 lg:py-32">
-          <BackgroundSection />
-          <SectionGridMoreExplore />
-        </div>
-
-        {/* SECTION */}
-        <SectionGridFeatureItems />
-
         {/*  */}
         <SectionPromo2 />
 
@@ -75,11 +76,13 @@ function PageHome() {
           <BackgroundSection />
           <div>
             <Heading rightDescText="Từ bài viết của Beautico">
-            Bài viết mới nhất
+              Bài viết mới nhất
             </Heading>
-            <SectionMagazine5 />
+            <SectionMagazine5  blogLatest={blogNew} loading={loading} />
             <div className="flex mt-16 justify-center">
-              <ButtonSecondary> 
+              <ButtonSecondary type="button" onClick={() => {
+                navigate("/bai-viet");
+              }}>
                 Xem thêm bài viết
               </ButtonSecondary>
             </div>

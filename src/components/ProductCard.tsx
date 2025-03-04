@@ -1,75 +1,79 @@
+"use client"
 import { Transition } from "@headlessui/react";
 import { ArrowsPointingOutIcon } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/24/solid";
-import { Product, PRODUCTS } from "../data/data";
 import React, { FC } from "react";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router";
+import { addCartItem } from "../features/cart/cartSlice";
 import ButtonPrimary from "../shared/Button/ButtonPrimary";
 import ButtonSecondary from "../shared/Button/ButtonSecondary";
 import NcImage from "../shared/NcImage/NcImage";
+import { AppDispatch } from "../store";
+import { Product } from "../types";
 import BagIcon from "./BagIcon";
-import LikeButton from "./LikeButton";
 import ModalQuickView from "./ModalQuickView";
 import Prices from "./Prices";
 import ProductStatus from "./ProductStatus";
 
 export interface ProductCardProps {
   className?: string;
-  data?: Product;
-  isLiked?: boolean;
+  product: Product;
 }
 
 const ProductCard: FC<ProductCardProps> = ({
   className = "",
-  data = PRODUCTS[0],
-  isLiked,
+  product
 }) => {
-  const {
-    name,
-    price,
-    description,
-    sizes,
-    variants,
-    variantType,
-    status,
-    image,
-  } = data;
-  const [variantActive, setVariantActive] = React.useState(0);
+  const image = product?.productImages?.length > 0 ? product?.productImages[0]?.image : "";
   const [showModalQuickView, setShowModalQuickView] = React.useState(false);
+  const dispatch: AppDispatch = useDispatch();
+  const notifyAddTocart = async (product: Product) => {
+    try {
 
-  const notifyAddTocart = ({ size }: { size?: string }) => {
-    toast.custom(
-      (t) => (
-        <Transition
-          appear
-          show={t.visible}
-          className="p-4 max-w-md w-full bg-white dark:bg-slate-800 shadow-lg rounded-2xl pointer-events-auto ring-1 ring-black/5 dark:ring-white/10 text-slate-900 dark:text-slate-200"
-          enter="transition-all duration-150"
-          enterFrom="opacity-0 translate-x-20"
-          enterTo="opacity-100 translate-x-0"
-          leave="transition-all duration-150"
-          leaveFrom="opacity-100 translate-x-0"
-          leaveTo="opacity-0 translate-x-20"
-        >
-          <p className="block text-base font-semibold leading-none">
-            Added to cart!
-          </p>
-          <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
-          {renderProductCartOnNotify({ size })}
-        </Transition>
-      ),
-      { position: "top-right", id: "nc-product-notify", duration: 3000 }
-    );
+      await dispatch(addCartItem(
+        {
+          productId: product.id,
+          quantity: 1
+        }
+      )).unwrap();
+
+      toast.custom(
+        (t) => (
+          <Transition
+            appear
+            show={t.visible}
+            className="p-4 max-w-md w-full bg-white dark:bg-slate-800 shadow-lg rounded-2xl pointer-events-auto ring-1 ring-black/5 dark:ring-white/10 text-slate-900 dark:text-slate-200"
+            enter="transition-all duration-150"
+            enterFrom="opacity-0 translate-x-20"
+            enterTo="opacity-100 translate-x-0"
+            leave="transition-all duration-150"
+            leaveFrom="opacity-100 translate-x-0"
+            leaveTo="opacity-0 translate-x-20"
+          >
+            <p className="block text-base font-semibold leading-none">
+              Thêm giỏ hàng thành công
+            </p>
+            <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
+            {renderProductCartOnNotify()}
+          </Transition>
+        ),
+        { position: "top-right", id: "nc-product-notify", duration: 3000 }
+      );
+    } catch (error) {
+      console.log(error);
+      toast.error("Thêm giỏ hàng thất bại");
+    }
   };
 
-  const renderProductCartOnNotify = ({ size }: { size?: string }) => {
+  const renderProductCartOnNotify = () => {
     return (
       <div className="flex ">
         <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           <img
-            src={image}
-            alt={name}
+            src={image || "/default-image.jpg"}
+            alt={product?.name || "Product Image"}
             className="h-full w-full object-cover object-center"
           />
         </div>
@@ -78,16 +82,15 @@ const ProductCard: FC<ProductCardProps> = ({
           <div>
             <div className="flex justify-between ">
               <div>
-                <h3 className="text-base font-medium ">{name}</h3>
+                <h3 className="text-base font-medium ">{product?.name || "Product Name"}</h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   <span>
-                    {variants ? variants[variantActive].name : `Natural`}
+                    {product?.brand?.name || "Brand"} - {product?.category?.name || "Category"}
                   </span>
                   <span className="mx-2 border-l border-slate-200 dark:border-slate-700 h-4"></span>
-                  <span>{size || "XL"}</span>
                 </p>
               </div>
-              <Prices price={price} className="mt-0.5" />
+              <Prices price={product?.price} className="mt-0.5" />
             </div>
           </div>
           <div className="flex flex-1 items-end justify-between text-sm">
@@ -107,93 +110,14 @@ const ProductCard: FC<ProductCardProps> = ({
     );
   };
 
-  const getBorderClass = (Bgclass = "") => {
-    if (Bgclass.includes("red")) {
-      return "border-red-500";
-    }
-    if (Bgclass.includes("violet")) {
-      return "border-violet-500";
-    }
-    if (Bgclass.includes("orange")) {
-      return "border-orange-500";
-    }
-    if (Bgclass.includes("green")) {
-      return "border-green-500";
-    }
-    if (Bgclass.includes("blue")) {
-      return "border-blue-500";
-    }
-    if (Bgclass.includes("sky")) {
-      return "border-sky-500";
-    }
-    if (Bgclass.includes("yellow")) {
-      return "border-yellow-500";
-    }
-    return "border-transparent";
-  };
-
-  const renderVariants = () => {
-    if (!variants || !variants.length || !variantType) {
-      return null;
-    }
-
-    if (variantType === "color") {
-      return (
-        <div className="flex space-x-1">
-          {variants.map((variant, index) => (
-            <div
-              key={index}
-              onClick={() => setVariantActive(index)}
-              className={`relative w-6 h-6 rounded-full overflow-hidden z-10 border cursor-pointer ${
-                variantActive === index
-                  ? getBorderClass(variant.color)
-                  : "border-transparent"
-              }`}
-              title={variant.name}
-            >
-              <div
-                className={`absolute inset-0.5 rounded-full z-0 ${variant.color}`}
-              ></div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex ">
-        {variants.map((variant, index) => (
-          <div
-            key={index}
-            onClick={() => setVariantActive(index)}
-            className={`relative w-11 h-6 rounded-full overflow-hidden z-10 border cursor-pointer ${
-              variantActive === index
-                ? "border-black dark:border-slate-300"
-                : "border-transparent"
-            }`}
-            title={variant.name}
-          >
-            <div className="absolute inset-0.5 rounded-full overflow-hidden z-0">
-              <img
-                src={variant.thumbnail}
-                alt="variant"
-                className="absolute w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderGroupButtons = () => {
+  const renderGroupButtons = (product: Product) => {
     return (
       <div className="absolute bottom-0 group-hover:bottom-4 inset-x-1 flex justify-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
         <ButtonPrimary
           className="shadow-lg"
           fontSize="text-xs"
           sizeClass="py-2 px-4"
-          onClick={() => notifyAddTocart({ size: "XL" })}
+          onClick={() => notifyAddTocart(product)}
         >
           <BagIcon className="w-3.5 h-3.5 mb-0.5" />
           <span className="ml-1">Add to bag</span>
@@ -211,82 +135,53 @@ const ProductCard: FC<ProductCardProps> = ({
     );
   };
 
-  const renderSizeList = () => {
-    if (!sizes || !sizes.length) {
-      return null;
-    }
-
-    return (
-      <div className="absolute bottom-0 inset-x-1 space-x-1.5 flex justify-center opacity-0 invisible group-hover:bottom-4 group-hover:opacity-100 group-hover:visible transition-all">
-        {sizes.map((size, index) => {
-          return (
-            <div
-              key={index}
-              className="nc-shadow-lg w-10 h-10 rounded-xl bg-white hover:bg-slate-900 hover:text-white transition-colors cursor-pointer flex items-center justify-center uppercase font-semibold tracking-tight text-sm text-slate-900"
-              onClick={() => notifyAddTocart({ size })}
-            >
-              {size}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <>
       <div
         className={`nc-ProductCard relative flex flex-col bg-transparent ${className}`}
         data-nc-id="ProductCard"
       >
-        <Link to={"/product-detail"} className="absolute inset-0"></Link>
-
+        <Link to={`/cua-hang/${product?.id}`} className="absolute inset-0"></Link>
         <div className="relative flex-shrink-0 bg-slate-50 dark:bg-slate-300 rounded-3xl overflow-hidden z-1 group">
-          <Link to={"/product-detail"} className="block">
+          <Link to={`/cua-hang/${product?.id}`} className="block">
             <NcImage
               containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"
-              src={image}
+              src={image || "/default-image.jpg"}
               className="object-cover w-full h-full drop-shadow-xl"
             />
           </Link>
+          <ProductStatus status={
+            product?.sale ? "sale" : product?.stock > 0 ? "stock" : "out of stock"
+          } />
 
-          <ProductStatus status={status} />
-
-          <LikeButton liked={isLiked} className="absolute top-3 right-3 z-10" />
-
-          {sizes ? renderSizeList() : renderGroupButtons()}
+          {renderGroupButtons(product)}
         </div>
-
         <div className="space-y-4 px-2.5 pt-5 pb-2.5">
-          {renderVariants()}
-
           <div>
-            <h2
-              className={`nc-ProductCard__title text-base font-semibold transition-colors`}
-            >
-              {name}
+            <h2 className={`nc-ProductCard__title text-base font-semibold transition-colors`}>
+              {product?.name || "Product Name"}
             </h2>
             <p className={`text-sm text-slate-500 dark:text-slate-400 mt-1 `}>
-              {description}
+              {product?.description || "No description available."}
             </p>
           </div>
-
           <div className="flex justify-between items-end ">
-            <Prices price={price} />
+            <Prices price={product?.price} />
             <div className="flex items-center mb-0.5">
               <StarIcon className="w-5 h-5 pb-[1px] text-amber-400" />
               <span className="text-sm ml-1 text-slate-500 dark:text-slate-400">
-                {(Math.random() * 1 + 4).toFixed(1)} (
-                {Math.floor(Math.random() * 70 + 20)} reviews)
+                {
+                  product?.reviews?.reduce((acc, review) => acc + review.star, 0) /
+                  (product?.reviews?.length || 1)
+                } ({product?.reviews?.length ?? 0} reviews)
               </span>
             </div>
           </div>
         </div>
       </div>
-
-      {/* QUICKVIEW */}
       <ModalQuickView
         show={showModalQuickView}
+        product={product}
         onCloseModalQuickView={() => setShowModalQuickView(false)}
       />
     </>

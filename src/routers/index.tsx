@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { BrowserRouter, Route, Routes } from "react-router";
 import AccountBilling from "../containers/AccountPage/AccountBilling";
 import AccountOrder from "../containers/AccountPage/AccountOrder";
+import AccountOrderDetail from "../containers/AccountPage/AccountOrderDetail";
 import AccountPage from "../containers/AccountPage/AccountPage";
 import AccountPass from "../containers/AccountPage/AccountPass";
 import AccountSavelists from "../containers/AccountPage/AccountSavelists";
@@ -13,7 +14,7 @@ import ListBlogCategory from "../containers/Admin/BlogCategory/ListBlogCategory"
 import AddBrand from "../containers/Admin/Brand/AddBrand";
 import ListBrand from "../containers/Admin/Brand/ListBrand";
 import AddCategories from "../containers/Admin/Categories/AddCategories";
-import ListCategies from "../containers/Admin/Categories/ListCategies";
+import ListCategories from "../containers/Admin/Categories/ListCategories";
 import DashboardPage from "../containers/Admin/Dashboard/DashboardPage";
 import AddDiscount from "../containers/Admin/Discount/AddDiscount";
 import ListDiscount from "../containers/Admin/Discount/ListDiscount";
@@ -46,13 +47,12 @@ import { Page } from "./types";
 
 export const pages: Page[] = [
   { path: "/", component: PageHome },
-  { path: "/product-detail", component: ProductDetailPage },
-  { path: "/product-detail-2", component: ProductDetailPage2 },
+  { path: "/cua-hang1/:id", component: ProductDetailPage },
+  { path: "/cua-hang/:id", component: ProductDetailPage2 },
   { path: "/cua-hang", component: PageCollection2 },
   { path: "/page-search", component: PageSearch },
-
   { path: "/bai-viet", component: BlogPage },
-  { path: "/blog-single", component: BlogSingle },
+  { path: "/bai-viet/:id", component: BlogSingle },
   { path: "/cau-hoi-thuong-gap", component: PageFaq },
   { path: "/thong-tin-ve-chung-toi", component: PageAbout },
   { path: "/lien-he", component: PageContact },
@@ -62,8 +62,9 @@ export const privatePages: Page[] = [
   { path: "/account", component: AccountPage },
   { path: "/account-savelists", component: AccountSavelists },
   { path: "/account-change-password", component: AccountPass },
-  { path: "/account-billing", component: AccountBilling },
+  { path: "/account-address", component: AccountBilling },
   { path: "/account-my-order", component: AccountOrder },
+  { path: "/account-my-order/:id", component: AccountOrderDetail },
   { path: "/checkout", component: CheckoutPage },
   { path: "/cart", component: CartPage },
 ]
@@ -100,7 +101,7 @@ export const adminPages: Page[] = [
   },
   {
     path: "/admin/categories",
-    component: ListCategies,
+    component: ListCategories,
   },
   {
     path: "/admin/categories/add",

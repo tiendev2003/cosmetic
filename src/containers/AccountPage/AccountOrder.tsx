@@ -1,83 +1,33 @@
-import { PRODUCTS } from "../../data/data";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import Prices from "../../components/Prices";
+import { PRODUCTS } from "../../data/data";
+import { fetchUserOrders } from "../../features/order/orderSlice";
 import ButtonSecondary from "../../shared/Button/ButtonSecondary";
+import { AppDispatch, RootState } from "../../store";
+import { Order } from "../../types";
+import formatDate from "../../utils/formatDate";
+import formatCurrencyVND from "../../utils/formatMoney";
 import CommonLayout from "./CommonLayout";
 
 const AccountOrder = () => {
-  const renderProductItem = (product: any, index: number) => {
-    const { image, name } = product;
-    return (
-      <div key={index} className="flex py-4 sm:py-7 last:pb-0 first:pt-0">
-        <div className="h-24 w-16 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
-          <img
-            src={image}
-            alt={name}
-            className="h-full w-full object-cover object-center"
-          />
-        </div>
+  const { orders, loading, error } = useSelector((state: RootState) => state.orders);
+  const dispatch: AppDispatch = useDispatch();
+  const navigate = useNavigate();
+  useEffect(() => {
+    dispatch(fetchUserOrders());
+  }
+    , [dispatch]);
 
-        <div className="ml-4 flex flex-1 flex-col">
-          <div>
-            <div className="flex justify-between ">
-              <div>
-                <h3 className="text-base font-medium line-clamp-1">{name}</h3>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  <span>{"Natural"}</span>
-                  <span className="mx-2 border-l border-slate-200 dark:border-slate-700 h-4"></span>
-                  <span>{"XL"}</span>
-                </p>
-              </div>
-              <Prices className="mt-0.5 ml-2" />
-            </div>
-          </div>
-          <div className="flex flex-1 items-end justify-between text-sm">
-            <p className="text-gray-500 dark:text-slate-400 flex items-center">
-              <span className="hidden sm:inline-block">Qty</span>
-              <span className="inline-block sm:hidden">x</span>
-              <span className="ml-2">1</span>
-            </p>
 
-            <div className="flex">
-              <button
-                type="button"
-                className="font-medium text-indigo-600 dark:text-primary-500 "
-              >
-                Leave review
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
-  const renderOrder = () => {
-    return (
-      <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden z-0">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 sm:p-8 bg-slate-50 dark:bg-slate-500/5">
-          <div>
-            <p className="text-lg font-semibold">#WU3746HGG12</p>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5 sm:mt-2">
-              <span>Aug 8, 2023</span>
-              <span className="mx-2">·</span>
-              <span className="text-primary-500">Delivered</span>
-            </p>
-          </div>
-          <div className="mt-3 sm:mt-0">
-            <ButtonSecondary
-              sizeClass="py-2.5 px-4 sm:px-6"
-              fontSize="text-sm font-medium"
-            >
-              View Order
-            </ButtonSecondary>
-          </div>
-        </div>
-        <div className="border-t border-slate-200 dark:border-slate-700 p-2 sm:p-8 divide-y divide-y-slate-200 dark:divide-slate-700">
-          {[PRODUCTS[0], PRODUCTS[1], PRODUCTS[2]].map(renderProductItem)}
-        </div>
-      </div>
-    );
-  };
+  if (loading) {
+    return <div className="px-6 py-4 text-center text-sm text-gray-500">Đang tải dữ liệu...</div>;
+  }
+  if (error) {
+    return <div className="px-6 py-4 text-center text-sm text-gray-500">{error}</div>;
+  }
 
   return (
     <div>
@@ -85,8 +35,82 @@ const AccountOrder = () => {
         <div className="space-y-10 sm:space-y-12">
           {/* HEADING */}
           <h2 className="text-2xl sm:text-3xl font-semibold">Order History</h2>
-          {renderOrder()}
-          {renderOrder()}
+          <div className="border border-gray-200">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ID đơn hàng
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ngày đặt hàng
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tổng tiền
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Số lượng
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thành tiền
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Trạng thái
+                    </th>
+
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Hành động
+                    </th>
+
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {
+                    orders.map((order, index) => (
+                      <tr key={order.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{order.id}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{formatDate(order.orderDate)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{formatCurrencyVND(order.totalAmount)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{order.orderItems.length}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{formatCurrencyVND(order.finalAmount)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{order.status}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            <ButtonSecondary
+                              type="button"
+                              onClick={() => {
+                                navigate(`/account-my-order/${order.id}`);
+                              }}
+                              sizeClass="py-2.5 px-4 sm:px-6"
+                              fontSize="text-sm font-medium"
+                            >
+                              Xem chi tiết
+                            </ButtonSecondary>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+
+                  }
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </CommonLayout>
     </div>

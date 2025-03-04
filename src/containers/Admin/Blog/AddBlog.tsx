@@ -1,56 +1,39 @@
 import { Editor } from '@tinymce/tinymce-react';
-import { FormEvent, useState } from "react";
-import { NavLink, useNavigate } from "react-router";
-import { Blog, BlogCategory, Tag, UserInfo } from "../../../types";
+import { FormEvent, useEffect, useState } from "react";
+import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { NavLink, useNavigate, useParams } from "react-router";
+import api from '../../../api/api';
+import { addBlog, fetchBlogById, updateBlog } from '../../../features/blog/blogSlice';
+import { fetchBlogCategories } from '../../../features/blogCategory/blogCategorySlice';
+import { fetchTags } from '../../../features/tag/tagSlice';
+import { fetchUsers } from '../../../features/users/userSlice';
+import { AppDispatch, RootState } from '../../../store';
+import { BlogRequest } from "../../../types";
+import { uploadImage } from '../../../utils/uploadImage';
 
-const mockCategories: BlogCategory[] = [
-  { id: 1, name: 'Programming', description: 'All about programming', createdDate: '2025-03-01', updatedDate: '2025-03-01' },
-  { id: 2, name: 'Web Development', description: 'All about web development', createdDate: '2025-03-01', updatedDate: '2025-03-01' },
-  { id: 3, name: 'CSS', description: 'All about CSS', createdDate: '2025-03-01', updatedDate: '2025-03-01' },
-  { id: 4, name: 'UI/UX', description: 'All about UI/UX', createdDate: '2025-03-01', updatedDate: '2025-03-01' },
-];
 
-const mockAuthors: UserInfo[] = [
-  { id: 1, username: 'admin', email: 'admin@gmail.con', avatar: '', role: 'admin', is_blocked: false },
-  { id: 2, username: 'admin', email: 'admin@gmail.con', avatar: '', role: 'admin', is_blocked: false },
-  { id: 3, username: 'admin', email: 'admin@gmail.con', avatar: '', role: 'admin', is_blocked: false },
-  { id: 4, username: 'admin', email: 'admin@gmail.con', avatar: '', role: 'admin', is_blocked: false },
-  { id: 5, username: 'admin', email: 'admin@gmail.con', avatar: '', role: 'admin', is_blocked: false },
-
-];
-
-const initialTags: Tag[] = [
-  { id: 1, name: 'React' },
-  { id: 2, name: 'TypeScript' },
-  { id: 3, name: 'Tailwind' },
-];
-
-const mockTags: Tag[] = [
-  { id: 1, name: 'React' },
-  { id: 2, name: 'TypeScript' },
-  { id: 3, name: 'Tailwind' },
-];
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
-}
 
 const AddBlog = () => {
   const navigate = useNavigate();
-
+  const dispatch: AppDispatch = useDispatch();
+  const { id } = useParams<{ id: string }>();
+  const { blog, loading, error } = useSelector((state: RootState) => state.blogs);
+  const { categories, } = useSelector((state: RootState) => state.blogCategories);
+  const { tags } = useSelector((state: RootState) => state.tags);
+  const { users } = useSelector((state: RootState) => state.users);
   // State cho form
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    image: '',
-    status: 'Draft',
+    image: null as File | string | null,
+    status: 'Nháp',
     categoryId: '',
     authorId: '',
     tagIds: [] as number[],
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [tags, setTags] = useState<Tag[]>(initialTags); // Danh sách tag động
   const [newTag, setNewTag] = useState(''); // Tag mới từ input
 
   // Xử lý thay đổi input
@@ -81,14 +64,18 @@ const AddBlog = () => {
 
   // Thêm tag mới
   const addNewTag = () => {
-    if (newTag.trim() && !tags.some(tag => tag.name.toLowerCase() === newTag.toLowerCase())) {
-      const newTagObj: Tag = {
-        id: Date.now(), // Tạo ID tạm thời (trong thực tế nên dùng UUID hoặc từ backend)
-        name: newTag.trim(),
-      };
-      setTags((prev) => [...prev, newTagObj]);
-      setFormData((prev) => ({ ...prev, tagIds: [...prev.tagIds, newTagObj.id] }));
-      setNewTag(''); // Reset input
+    if (newTag.trim() !== '') {
+      const newTagObject = { id: Date.now(), name: newTag };
+      setFormData((prev) => ({
+        ...prev,
+        tagIds: [...prev.tagIds, newTagObject.id],
+      }));
+      setNewTag('');
+      // Optionally, you can dispatch an action to add the new tag to the store
+      // dispatch(addTag(newTagObject));
+      toast.success('Added new tag successfully');
+    } else {
+      toast.error('Tag name cannot be empty');
     }
   };
 
@@ -105,42 +92,96 @@ const AddBlog = () => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, image: file.name }));
+      setFormData((prev) => ({ ...prev, image: file }));
       setImagePreview(imageUrl);
     }
   };
 
+  useEffect(() => {
+    dispatch(fetchBlogCategories(
+      { page: 1, search: '', size: 100 }
+    ));
+    dispatch(fetchTags(
+      { page: 1, search: '', size: 100 }
+    ));
+    dispatch(fetchUsers(
+      {
+        page: 1, search: '', size:
+          100
+      }
+    ));
+  }, [
+    dispatch]);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchBlogById(Number(id))).then((action) => {
+        if (fetchBlogById.fulfilled.match(action)) {
+          const blog = action.payload;
+          setFormData({
+            title: blog.title,
+            content: blog.content,
+            image: blog.image,
+            status: blog.status,
+            categoryId: blog?.category?.id?.toString(),
+            authorId: blog.author.id.toString(),
+            tagIds: blog.tags.map(tag => tag.id),
+          });
+          setImagePreview(blog.image);
+        }
+      });
+    }
+  }, [id, dispatch]);
+
   // Xử lý submit form
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const newBlog: Blog = {
-      id: Date.now(),
-      title: formData.title,
-      content: formData.content,
-      image: formData.image,
-      status: formData.status,
-      createdDate: new Date().toISOString(),
-      updatedDate: new Date().toISOString(),
-      category: mockCategories.find((cat) => cat.id === Number(formData.categoryId))!,
-      author: mockAuthors.find((auth) => auth.id === Number(formData.authorId))!,
-      tags: tags.filter((tag) => formData.tagIds.includes(tag.id)),
-    };
+    try {
+      let imageUrl = imagePreview;
+      if (formData.image && typeof formData.image !== 'string') {
+        const formDataImage = new FormData();
+        formDataImage.append('file', formData.image);
+        const image = await uploadImage(formDataImage);
+        imageUrl = api.getUri() + "/api" + image;
+      }
 
-    console.log('New Blog:', newBlog);
-    navigate('/admin/blog');
+      const newBlog: BlogRequest = {
+        id: blog ? blog.id : Date.now(),
+        title: formData.title,
+        content: formData.content.toString(),
+        image: imageUrl!,
+        status: formData.status,
+        createdDate: blog ? blog.createdDate : new Date().toISOString(),
+        updatedDate: new Date().toISOString(),
+        categoryId: categories.find((cat) => cat.id === Number(formData.categoryId))?.id!,
+        author: users.find((user) => user.id === Number(formData.authorId))?.id!,
+        tags: tags.filter((tag) => formData.tagIds.includes(tag.id)).map((tag) => tag.name),
+      };
+ 
+      if (blog?.id) {
+        await dispatch(updateBlog(newBlog)).unwrap();
+        toast.success('Updated blog successfully');
+      } else {
+        await dispatch(addBlog(newBlog)).unwrap();
+        toast.success('Added blog successfully');
+      }
+      navigate('/admin/blog');
+    } catch (error) {
+      toast.error('Failed to save blog');
+    }
   };
 
   return (
     <div className="p-6 mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Add New Blog</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Thêm Blog Mới</h1>
         <NavLink
           to="/admin/blog"
           className="text-indigo-600 hover:text-indigo-900 flex items-center"
         >
-          <span className="mr-2">Back to Blog List</span>
+          <span className="mr-2">Quay lại danh sách Blog</span>
         </NavLink>
       </div>
 
@@ -149,7 +190,7 @@ const AddBlog = () => {
         {/* Title */}
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Title
+            Tiêu đề
           </label>
           <input
             type="text"
@@ -165,7 +206,7 @@ const AddBlog = () => {
         {/* Content with TinyMCE */}
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700">
-            Content
+            Nội dung
           </label>
           <Editor
             apiKey='btnhknzsdtdbu8ck8nwda9fxjxrlb2euoccuw6rfr5otxf02'
@@ -191,7 +232,7 @@ const AddBlog = () => {
         {/* Image */}
         <div>
           <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-            Image
+            Hình ảnh
           </label>
           <input
             type="file"
@@ -211,7 +252,7 @@ const AddBlog = () => {
         {/* Status */}
         <div>
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-            Status
+            Trạng thái
           </label>
           <select
             id="status"
@@ -220,15 +261,15 @@ const AddBlog = () => {
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="Draft">Draft</option>
-            <option value="Published">Published</option>
+            <option value="Nháp">Nháp</option>
+            <option value="Đã xuất bản">Đã xuất bản</option>
           </select>
         </div>
 
         {/* Category */}
         <div>
           <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">
-            Category
+            Danh mục
           </label>
           <select
             id="categoryId"
@@ -238,8 +279,8 @@ const AddBlog = () => {
             required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="">Select a category</option>
-            {mockCategories.map((category) => (
+            <option value="">Chọn danh mục</option>
+            {categories && categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>
@@ -250,7 +291,7 @@ const AddBlog = () => {
         {/* Author */}
         <div>
           <label htmlFor="authorId" className="block text-sm font-medium text-gray-700">
-            Author
+            Tác giả
           </label>
           <select
             id="authorId"
@@ -260,8 +301,8 @@ const AddBlog = () => {
             required
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="">Select an author</option>
-            {mockAuthors.map((author) => (
+            <option value="">Chọn tác giả</option>
+            {users && users.map((author) => (
               <option key={author.id} value={author.id}>
                 {author.username}
               </option>
@@ -272,7 +313,7 @@ const AddBlog = () => {
         {/* Tags */}
         <div>
           <label htmlFor="tagIds" className="block text-sm font-medium text-gray-700">
-            Tags
+            Thẻ
           </label>
           <select
             id="tagIds"
@@ -288,7 +329,7 @@ const AddBlog = () => {
               </option>
             ))}
           </select>
-          <p className="mt-1 text-sm text-gray-500">Hold Ctrl (or Cmd) to select multiple tags.</p>
+          <p className="mt-1 text-sm text-gray-500">Giữ Ctrl (hoặc Cmd) để chọn nhiều thẻ.</p>
 
           {/* Input để thêm tag mới */}
           <div className="mt-2 flex items-center space-x-2">
@@ -297,7 +338,7 @@ const AddBlog = () => {
               value={newTag}
               onChange={handleNewTagChange}
               onKeyDown={handleKeyDown}
-              placeholder="Enter new tag"
+              placeholder="Nhập thẻ mới"
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
             <button
@@ -305,7 +346,7 @@ const AddBlog = () => {
               onClick={addNewTag}
               className="inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
             >
-              Add
+              Thêm
             </button>
           </div>
         </div>
@@ -316,13 +357,13 @@ const AddBlog = () => {
             to="/admin/blog"
             className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
           >
-            Cancel
+            Hủy
           </NavLink>
           <button
             type="submit"
             className="inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
           >
-            Save Blog
+            Lưu Blog
           </button>
         </div>
       </form>

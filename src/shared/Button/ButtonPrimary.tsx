@@ -1,6 +1,6 @@
+"use client"
 import React from "react";
 import Button, { ButtonProps } from "../../shared/Button/Button";
-
 export interface ButtonPrimaryProps extends ButtonProps {}
 
 const ButtonPrimary: React.FC<ButtonPrimaryProps> = ({

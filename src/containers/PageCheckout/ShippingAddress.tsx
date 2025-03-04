@@ -1,22 +1,34 @@
-import { FC } from "react";
-import Label from "../../components/Label/Label";
-import ButtonPrimary from "../../shared/Button/ButtonPrimary";
+import { FC, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getAddressDefault } from "../../features/address/addressSlice";
 import ButtonSecondary from "../../shared/Button/ButtonSecondary";
-import Input from "../../shared/Input/Input";
-import Radio from "../../shared/Radio/Radio";
-import Select from "../../shared/Select/Select";
+import { AppDispatch, RootState } from "../../store";
+import { Address } from "../../types";
 
 interface Props {
   isActive: boolean;
   onCloseActive: () => void;
   onOpenActive: () => void;
+  onSelectAddress: (address: Address) => void;
 }
 
 const ShippingAddress: FC<Props> = ({
-  isActive,
-  onCloseActive,
   onOpenActive,
+  onSelectAddress,
 }) => {
+  const dispatch: AppDispatch = useDispatch();
+
+  const { address } = useSelector((state: RootState) => state.address);
+  useEffect(() => {
+    dispatch(getAddressDefault());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (address) {
+      onSelectAddress(address);
+    }
+  }, [address, onSelectAddress]);
+
   const renderShippingAddress = () => {
     return (
       <div className="border border-slate-200 dark:border-slate-700 rounded-xl ">
@@ -68,7 +80,7 @@ const ShippingAddress: FC<Props> = ({
 
           <div className="sm:ml-8">
             <h3 className=" text-slate-700 dark:text-slate-300 flex ">
-              <span className="uppercase">SHIPPING ADDRESS</span>
+              <span className="uppercase">Địa chỉ thanh toán</span>
               <svg
                 fill="none"
                 viewBox="0 0 24 24"
@@ -85,7 +97,11 @@ const ShippingAddress: FC<Props> = ({
             </h3>
             <div className="font-semibold mt-1 text-sm">
               <span className="">
-                St. Paul's Road, Norris, SD 57560, Dakota, USA
+                {
+                  address ? (address.firstName + " " + address.lastName + ", " + address.streetAddress + ", " + address.city + ", " + address.state + " " + address.zipCode)
+
+                    : "Chưa có địa chỉ"
+                }
               </span>
             </div>
           </div>
@@ -95,109 +111,8 @@ const ShippingAddress: FC<Props> = ({
             className="bg-slate-50 dark:bg-slate-800 mt-5 sm:mt-0 sm:ml-auto !rounded-lg"
             onClick={onOpenActive}
           >
-            Change
+            Thay đổi
           </ButtonSecondary>
-        </div>
-        <div
-          className={`border-t border-slate-200 dark:border-slate-700 px-6 py-7 space-y-4 sm:space-y-6 ${
-            isActive ? "block" : "hidden"
-          }`}
-        >
-          {/* ============ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
-            <div>
-              <Label className="text-sm">First name</Label>
-              <Input className="mt-1.5" defaultValue="Cole" />
-            </div>
-            <div>
-              <Label className="text-sm">Last name</Label>
-              <Input className="mt-1.5" defaultValue="Enrico " />
-            </div>
-          </div>
-
-          {/* ============ */}
-          <div className="sm:flex space-y-4 sm:space-y-0 sm:space-x-3">
-            <div className="flex-1">
-              <Label className="text-sm">Address</Label>
-              <Input
-                className="mt-1.5"
-                placeholder=""
-                defaultValue={"123, Dream Avenue, USA"}
-                type={"text"}
-              />
-            </div>
-            <div className="sm:w-1/3">
-              <Label className="text-sm">Apt, Suite *</Label>
-              <Input className="mt-1.5" defaultValue="55U - DD5 " />
-            </div>
-          </div>
-
-          {/* ============ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
-            <div>
-              <Label className="text-sm">City</Label>
-              <Input className="mt-1.5" defaultValue="Norris" />
-            </div>
-            <div>
-              <Label className="text-sm">Country</Label>
-              <Select className="mt-1.5" defaultValue="United States ">
-                <option value="United States">United States</option>
-                <option value="United States">Canada</option>
-                <option value="United States">Mexico</option>
-                <option value="United States">Israel</option>
-                <option value="United States">France</option>
-                <option value="United States">England</option>
-                <option value="United States">Laos</option>
-                <option value="United States">China</option>
-              </Select>
-            </div>
-          </div>
-
-          {/* ============ */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
-            <div>
-              <Label className="text-sm">State/Province</Label>
-              <Input className="mt-1.5" defaultValue="Texas" />
-            </div>
-            <div>
-              <Label className="text-sm">Postal code</Label>
-              <Input className="mt-1.5" defaultValue="2500 " />
-            </div>
-          </div>
-
-          {/* ============ */}
-          <div>
-            <Label className="text-sm">Address type</Label>
-            <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              <Radio
-                label={`<span class="text-sm font-medium">Home <span class="font-light">(All Day Delivery)</span></span>`}
-                id="Address-type-home"
-                name="Address-type"
-                defaultChecked
-              />
-              <Radio
-                label={`<span class="text-sm font-medium">Office <span class="font-light">(Delivery <span class="font-medium">9 AM - 5 PM</span>)</span> </span>`}
-                id="Address-type-office"
-                name="Address-type"
-              />
-            </div>
-          </div>
-
-          {/* ============ */}
-          <div className="flex flex-col sm:flex-row pt-6">
-            <ButtonPrimary
-              className="sm:!px-7 shadow-none"
-              onClick={onCloseActive}
-            >
-              Save and next to Payment
-            </ButtonPrimary>
-            <ButtonSecondary
-              className="mt-3 sm:mt-0 sm:ml-3"
-              onClick={onCloseActive}
-            >
-              Cancel
-            </ButtonSecondary>
-          </div>
         </div>
       </div>
     );

@@ -1,18 +1,52 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import React, { FC, useState } from "react";
-import { useNavigate } from "react-router";
+import React, { FC, useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router";
+import { searchProducts } from "../../features/product/productSlice";
 import Logo from "../../shared/Logo/Logo";
 import MenuBar from "../../shared/MenuBar/MenuBar";
 import Navigation from "../../shared/Navigation/Navigation";
+import { AppDispatch } from "../../store";
+import { Product } from "../../types";
+import Prices from "../Prices";
 import AvatarDropdown from "./AvatarDropdown";
 import CartDropdown from "./CartDropdown";
 
-export interface MainNav2LoggedProps {}
+export interface MainNav2LoggedProps { }
 
 const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
   const inputRef = React.createRef<HTMLInputElement>();
   const [showSearchForm, setShowSearchForm] = useState(false);
   const navigate = useNavigate();
+  const dispatch: AppDispatch = useDispatch();
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    if (searchTerm.trim() === "") {
+      setSearchResults([]);
+      return;
+    }
+
+    debounceTimeout.current = setTimeout(async () => {
+      try {
+        const results = await dispatch(searchProducts(searchTerm)).unwrap();
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Error searching products:", error);
+      }
+    }, 300);
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchTerm, dispatch]);
 
   const renderMagnifyingGlassIcon = () => {
     return (
@@ -41,30 +75,72 @@ const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
     );
   };
 
+  const renderSearchResults = () => {
+    return (
+      <ul className="absolute bg-white dark:bg-neutral-900 w-full mt-2 rounded shadow-lg">
+        {searchResults.slice(0,5).map((product, index) => (
+          <div key={index} className="relative flex py-4 first:pt-0 last:pb-3">
+            <div className="relative h-32 w-5 sm:w-32 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+              <img
+                src={product?.productImages[0].image || "/default-image.jpg"}
+                alt={product?.name || "Product Image"}
+                className="h-full w-full object-contain object-center"
+              />
+            </div>
+            <Link to={`/cua-hang/${product?.id}`} onClick={() => {
+              setShowSearchForm(false)
+              setSearchTerm("")
+            }}>
+
+              <div className="ml-3 sm:ml-6 flex flex-1 flex-col mt-1">
+
+                <div className="flex-[1.5] ">
+                  <h3 className="text-base font-semibold">
+                    {product?.name}
+                  </h3>
+                </div>
+
+                <div className="flex mt-1">
+                  <Prices price={product.price} className="mt-0.5" />
+                </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </ul>
+    );
+  };
+
   const renderSearchForm = () => {
     return (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          navigate("/page-search");
-        }}
-        className="flex-1 py-2 text-slate-900 dark:text-slate-100"
-      >
-        <div className="bg-slate-50 dark:bg-slate-800 flex items-center space-x-1.5 px-5 h-full rounded">
-          {renderMagnifyingGlassIcon()}
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Type and press enter"
-            className="border-none bg-transparent focus:outline-none focus:ring-0 w-full text-base"
-            autoFocus
-          />
-          <button type="button" onClick={() => setShowSearchForm(false)}>
-            <XMarkIcon className="w-5 h-5" />
-          </button>
+      <>
+        <div className="relative">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              navigate("/page-search");
+            }}
+            className="flex-1 py-2 text-slate-900 dark:text-slate-100"
+          >
+            <div className="bg-slate-50 dark:bg-slate-800 flex items-center space-x-1.5 px-5 h-full rounded">
+              {renderMagnifyingGlassIcon()}
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Gõ để tìm kiếm"
+                className="border-none bg-transparent focus:outline-none focus:ring-0 w-full text-base"
+                autoFocus
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button type="button" onClick={() => setShowSearchForm(false)}>
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <input type="submit" hidden value="" />
+          </form>
+          {searchResults.length > 0 && renderSearchResults()}
         </div>
-        <input type="submit" hidden value="" />
-      </form>
+      </>
     );
   };
 

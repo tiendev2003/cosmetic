@@ -10,7 +10,7 @@ export interface Address {
   zipCode: string;
   phone: string;
   email: string;
-  isDefault: boolean;
+  default: boolean;
   createdDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
   updatedDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
 }

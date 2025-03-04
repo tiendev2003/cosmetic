@@ -2,17 +2,19 @@ import { Dialog, Transition } from "@headlessui/react";
 import { FC, Fragment } from "react";
 import { useLocation } from "react-router";
 import ButtonClose from "../shared/ButtonClose/ButtonClose";
+import { Product } from "../types";
 import ProductQuickView from "./ProductQuickView";
-import ProductQuickView2 from "./ProductQuickView2";
 
 export interface ModalQuickViewProps {
   show: boolean;
   onCloseModalQuickView: () => void;
+  product: Product;
 }
 
 const ModalQuickView: FC<ModalQuickViewProps> = ({
   show,
   onCloseModalQuickView,
+  product,
 }) => {
   const location = useLocation();
 
@@ -59,11 +61,8 @@ const ModalQuickView: FC<ModalQuickViewProps> = ({
                 </span>
 
                 <div className="flex-1 overflow-y-auto rounded-xl hiddenScrollbar">
-                  {location.pathname.includes("home2") ? (
-                    <ProductQuickView2 />
-                  ) : (
-                    <ProductQuickView />
-                  )}
+                  <ProductQuickView product={product} />
+
                 </div>
               </div>
             </div>

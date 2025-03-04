@@ -1,8 +1,10 @@
 import { FC } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import ProductCard from "../components/ProductCard";
 import SectionPromo1 from "../components/SectionPromo1";
-import SectionSliderCollections from "../components/SectionSliderLargeProduct";
-import { PRODUCTS } from "../data/data";
+import { fetchProducts } from "../features/product/productSlice";
+import Pagination from "../shared/Pagination/Pagination";
+import { AppDispatch, RootState } from "../store";
 import SidebarFilters from "./SidebarFilters";
 
 export interface PageCollection2Props {
@@ -10,6 +12,15 @@ export interface PageCollection2Props {
 }
 
 const PageCollection2: FC<PageCollection2Props> = ({ className = "" }) => {
+  const { products, loading, error, pagination } = useSelector((state: RootState) => state.products)
+  const dispatch: AppDispatch = useDispatch()
+  const onPageChange = (page: number) => {
+    dispatch(fetchProducts({
+      page: page,
+      search: "",
+      size: 9,
+    }))
+  }
   return (
     <div
       className={`nc-PageCollection2 ${className}`}
@@ -28,20 +39,31 @@ const PageCollection2: FC<PageCollection2Props> = ({ className = "" }) => {
               </div>
               <div className="flex-shrink-0 mb-10 lg:mb-0 lg:mx-4 border-t lg:border-t-0"></div>
               <div className="flex-1 ">
-                <div className="flex-1 grid sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10 ">
-                  {PRODUCTS.map((item, index) => (
-                    <ProductCard data={item} key={index} />
-                  ))}
+                <div className=" grid sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-10 ">
+                  {
+                    error ? <div className="flex items-center justify-center min-h-screen">
+                      <div className="text-red-500">{error}</div>
+                    </div> :
+                      products?.length > 0 ? products.map((product, index) => (
+                        <ProductCard key={index}
+                          product={product}
+                          className=""
+                        />
+                      )) : <div className="flex items-center justify-center min-h-screen">No products</div>
+
+                  }
                 </div>
+                <div className="flex justify-center items-center mt-5">
+                  {
+                    pagination && <Pagination pagination={pagination} onPageChange={onPageChange} />
+                  }
+                </div>
+
               </div>
             </div>
           </main>
         </div>
-
         {/* === SECTION 5 === */}
-        <hr className="border-slate-200 dark:border-slate-700" />
-
-        <SectionSliderCollections />
         <hr className="border-slate-200 dark:border-slate-700" />
 
         {/* SUBCRIBES */}

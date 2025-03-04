@@ -1,10 +1,13 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { AxiosError } from "axios";
 import api from "../../api/api";
-import { Blog } from "../../types/blog.types";
+import { Blog, BlogRequest } from "../../types/blog.types";
 import { Pagination } from "../../types/pagination.types";
 
 interface BlogState {
   blogs: Blog[];
+  blogNew: Blog[];
+  blog: Blog | null;
   loading: boolean;
   error: string | null;
   pagination: Pagination | null;
@@ -12,6 +15,8 @@ interface BlogState {
 
 const initialState: BlogState = {
   blogs: [],
+  blogNew: [],
+  blog: null,
   loading: false,
   error: null,
   pagination: null,
@@ -19,19 +24,30 @@ const initialState: BlogState = {
 
 export const fetchBlogs = createAsyncThunk(
   "blog/fetchBlogs",
-  async ({ page = 1, search = "" }: { page?: number; search?: string }) => {
-    const response = await api.get(`/api/blogs?page=${page}&search=${search}`);
+  async ({
+    page = 1,
+    search = "",
+    size = 10,
+  }: {
+    page?: number;
+    search?: string;
+    size?: number;
+  }) => {
+    const response = await api.get(
+      `/api/blog?page=${page - 1}&search=${search}&size=${size}`
+    );
+    console.log(response.data);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
-    return response.data as { data: Blog[], pagination: Pagination };
+    return response.data as { data: Blog[]; pagination: Pagination };
   }
 );
 
 export const addBlog = createAsyncThunk(
   "blog/addBlog",
-  async (newBlog: Blog) => {
-    const response = await api.post("/api/blogs", newBlog);
+  async (newBlog: BlogRequest) => {
+    const response = await api.post("/api/blog", newBlog);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -41,8 +57,8 @@ export const addBlog = createAsyncThunk(
 
 export const updateBlog = createAsyncThunk(
   "blog/updateBlog",
-  async (updatedBlog: Blog) => {
-    const response = await api.put(`/api/blogs/${updatedBlog.id}`, updatedBlog);
+  async (updatedBlog: BlogRequest) => {
+    const response = await api.put(`/api/blog/${updatedBlog.id}`, updatedBlog);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -53,11 +69,43 @@ export const updateBlog = createAsyncThunk(
 export const deleteBlog = createAsyncThunk(
   "blog/deleteBlog",
   async (blogId: number) => {
-    const response = await api.delete(`/api/blogs/${blogId}`);
+    const response = await api.delete(`/api/blog/${blogId}`);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
     return blogId;
+  }
+);
+export const fetchBlogById = createAsyncThunk(
+  "blog/fetchBlogById",
+  async (blogId: number) => {
+    const response = await api.get(`/api/blog/${blogId}`);
+    console.log("loading blog" ,response.data);
+    if (response.data.status === "error") {
+      throw new Error(response.data.message);
+    }
+    return response.data.data as Blog;
+  }
+);
+
+export const fetchNewBlog = createAsyncThunk(
+  "blog/fetchNewBlog",
+  async (_: void, { rejectWithValue }) => {
+    try {
+      const response = await api.get("/api/blog/latest");
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      console.log(response.data.data);
+      return response.data.data as Blog[];
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
+    }
   }
 );
 
@@ -73,7 +121,10 @@ const blogSlice = createSlice({
       })
       .addCase(
         fetchBlogs.fulfilled,
-        (state, action: PayloadAction<{ data: Blog[], pagination: Pagination }>) => {
+        (
+          state,
+          action: PayloadAction<{ data: Blog[]; pagination: Pagination }>
+        ) => {
           state.loading = false;
           state.blogs = action.payload.data;
           state.pagination = action.payload.pagination;
@@ -87,13 +138,10 @@ const blogSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        addBlog.fulfilled,
-        (state, action: PayloadAction<Blog>) => {
-          state.loading = false;
-          state.blogs.push(action.payload);
-        }
-      )
+      .addCase(addBlog.fulfilled, (state, action: PayloadAction<Blog>) => {
+        state.loading = false;
+        state.blogs.push(action.payload);
+      })
       .addCase(addBlog.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to add blog";
@@ -102,18 +150,15 @@ const blogSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        updateBlog.fulfilled,
-        (state, action: PayloadAction<Blog>) => {
-          state.loading = false;
-          const index = state.blogs.findIndex(
-            (blog) => blog.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.blogs[index] = action.payload;
-          }
+      .addCase(updateBlog.fulfilled, (state, action: PayloadAction<Blog>) => {
+        state.loading = false;
+        const index = state.blogs.findIndex(
+          (blog) => blog.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.blogs[index] = action.payload;
         }
-      )
+      })
       .addCase(updateBlog.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to update blog";
@@ -122,18 +167,43 @@ const blogSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        deleteBlog.fulfilled,
-        (state, action: PayloadAction<number>) => {
-          state.loading = false;
-          state.blogs = state.blogs.filter(
-            (blog) => blog.id !== action.payload
-          );
-        }
-      )
+      .addCase(deleteBlog.fulfilled, (state, action: PayloadAction<number>) => {
+        state.loading = false;
+        state.blogs = state.blogs.filter((blog) => blog.id !== action.payload);
+      })
       .addCase(deleteBlog.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to delete blog";
+      })
+      .addCase(fetchBlogById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchBlogById.fulfilled,
+        (state, action: PayloadAction<Blog>) => {
+          state.loading = false;
+          state.blog = action.payload;
+        }
+      )
+      .addCase(fetchBlogById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch blog";
+      })
+      .addCase(fetchNewBlog.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchNewBlog.fulfilled,
+        (state, action: PayloadAction<Blog[]>) => {
+          state.loading = false;
+          state.blogNew = action.payload;
+        }
+      )
+      .addCase(fetchNewBlog.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch new blogs";
       });
   },
 });

@@ -1,24 +1,67 @@
-import { FormEvent, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router';
+import { FormEvent, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { NavLink, useNavigate, useParams } from 'react-router';
+import api from '../../../api/api';
+import { addBrand, fetchBrandById, updateBrand } from '../../../features/brand/brandSlice';
+import { AppDispatch, RootState } from '../../../store';
 import { Brand } from '../../../types';
- 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
+import { uploadImage } from '../../../utils/uploadImage';
 
 const AddBrand = () => {
   const navigate = useNavigate();
+  const dispatch: AppDispatch = useDispatch();
+  const { id } = useParams<{ id: string }>();
+  const { brand, loading, error } = useSelector((state: RootState) =>
+    state.brands
+  );
+  console.log('fetchBrandById',id);
+
 
   // State cho form
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    image: File | string | null;
+    status: string;
+  }>({
     name: '',
     description: '',
-    image: '',
-    status: 'Active', // Mặc định là Active
+    image: null,
+    status: 'Active',
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Load brand cần chỉnh sửa nếu có
+  useEffect(() => {
+    if (brand) {
+      setFormData({
+        name: brand.name,
+        description: brand.description,
+        image: brand.image ,
+        status: brand.status,
+      });
+      setImagePreview(brand.image);
+    }
+  }, [ ]);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchBrandById(id)).then((action) => {
+        if (fetchBrandById.fulfilled.match(action)) {
+          const brand = action.payload;
+          setFormData({
+            name: brand.name,
+            description: brand.description,
+            image: brand.image,
+            status: brand.status,
+          });
+          setImagePreview(brand.image);
+        }
+      });
+    }
+  }, [id, dispatch]);
 
   // Xử lý thay đổi input
   const handleInputChange = (
@@ -33,52 +76,70 @@ const AddBrand = () => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, image: file.name })); // Lưu tên file hoặc URL tùy yêu cầu
+      setFormData((prev) => ({ ...prev, image: file }));
       setImagePreview(imageUrl);
     }
   };
 
   // Xử lý submit form
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Tạo object Brand theo model
-    const newBrand: Brand = {
-      id: Date.now(), // Tạm dùng timestamp làm ID, thay bằng ID từ backend trong thực tế
-      name: formData.name,
-      description: formData.description,
-      image: formData.image,
-      status: formData.status,
-      createdDate: new Date().toISOString(),
-      updatedDate: new Date().toISOString(),
-    };
+    try {
+      let imageUrl = imagePreview;
+      if (formData.image) {
+        const formDataImage = new FormData();
+        formDataImage.append('file', formData.image as File);
+        const image = await uploadImage(formDataImage);
+        imageUrl = api.getUri() + "/api" + image;
+      }
 
-    // Log dữ liệu để kiểm tra (thay bằng API call trong thực tế)
-    console.log('New Brand:', newBrand);
+      const newBrand: Brand = {
+        id: brand ? brand.id : Date.now(),
+        name: formData.name,
+        description: formData.description,
+        image: imageUrl!,
+        status: formData.status,
+        createdDate: brand ? brand.createdDate : new Date().toISOString(),
+        updatedDate: new Date().toISOString(),
+      };
 
-    // Chuyển hướng về danh sách brand sau khi thêm
-    navigate('/admin/brand');
+      if (brand) {
+        await dispatch(updateBrand(newBrand)).unwrap();
+        toast.success('Cập nhật thương hiệu thành công');
+      } else {
+        await dispatch(addBrand(newBrand)).unwrap();
+        toast.success('Thêm thương hiệu thành công');
+      }
+
+      navigate('/admin/brand');
+    } catch (error) {
+      console.log('Failed to save brand:', error);
+      toast.error('Có lỗi xảy ra khi lưu thương hiệu');
+    }
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Add New Brand</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {brand ? 'Chỉnh sửa thương hiệu' : 'Thêm thương hiệu mới'}
+        </h1>
         <NavLink
           to="/admin/brand"
           className="text-indigo-600 hover:text-indigo-900 flex items-center"
         >
-          <span className="mr-2">Back to Brand List</span>
+          <span className="mr-2">Quay lại danh sách thương hiệu</span>
         </NavLink>
       </div>
-
+    
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         {/* Name */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Name
+            Tên
           </label>
           <input
             type="text"
@@ -94,7 +155,7 @@ const AddBrand = () => {
         {/* Description */}
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Description
+            Mô tả
           </label>
           <textarea
             id="description"
@@ -109,7 +170,7 @@ const AddBrand = () => {
         {/* Image */}
         <div>
           <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-            Image
+            Hình ảnh
           </label>
           <input
             type="file"
@@ -129,7 +190,7 @@ const AddBrand = () => {
         {/* Status */}
         <div>
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-            Status
+            Trạng thái
           </label>
           <select
             id="status"
@@ -138,8 +199,8 @@ const AddBrand = () => {
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
+            <option value="Active">Hoạt động</option>
+            <option value="Inactive">Không hoạt động</option>
           </select>
         </div>
 
@@ -149,18 +210,18 @@ const AddBrand = () => {
             to="/admin/brand"
             className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
           >
-            Cancel
+            Hủy
           </NavLink>
           <button
             type="submit"
             className="inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
           >
-            Save Brand
+            {brand ? 'Cập nhật thương hiệu' : 'Lưu thương hiệu'}
           </button>
         </div>
       </form>
     </div>
   );
-}
+};
 
-export default AddBrand
+export default AddBrand;

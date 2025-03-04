@@ -4,6 +4,7 @@ export interface LocationStates {
   "/"?: {};
   "/cua-hang"?: {};
   "/bai-viet"?: {};
+  "/bai-viet/:id"?: {};
   "/thong-tin-ve-chung-toi"?: {};
   "/product-detail-2"?: {};
   "/cau-hoi-thuong-gap"?: {};
@@ -16,9 +17,12 @@ export interface LocationStates {
   "/page-collection"?: {};
   "/home2"?: {};
   "/account-change-password"?: {};
-  "/account-billing"?: {};
+  "/account-address"?: {};
   "/account-my-order"?: {};
+  "/account-my-order/:id"?: {};
   "/cart"?: {};
+  "/cua-hang/:id"?: {};
+  "/cua-hang1/:id"?: {};
   "/checkout"?: {};
   "/blog"?: {};
   "/blog-single"?: {};

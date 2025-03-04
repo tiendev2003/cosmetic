@@ -1,11 +1,16 @@
-import { Product } from './product.types';
+import { Product } from "./product.types";
 
 // Model cho CartItem (giả định cấu trúc cơ bản)
 export interface CartItem {
   id: number;
   product: Product; // Quan hệ với Product (giả định có product trong CartItem)
   quantity: number;
-  price: number; // Giá tại thời điểm thêm vào giỏ
+  unitPrice: number; // Giá của một sản phẩm
+}
+
+export interface CartItemRequest {
+  productId: number;
+  quantity: number;
 }
 
 // Model cho Cart

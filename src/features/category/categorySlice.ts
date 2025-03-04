@@ -5,6 +5,7 @@ import { Pagination } from "../../types/pagination.types";
 
 interface CategoryState {
   categories: Category[];
+  category: Category | null;
   loading: boolean;
   error: string | null;
   pagination: Pagination | null;
@@ -12,6 +13,7 @@ interface CategoryState {
 
 const initialState: CategoryState = {
   categories: [],
+  category: null,
   loading: false,
   error: null,
   pagination: null,
@@ -19,8 +21,19 @@ const initialState: CategoryState = {
 
 export const fetchCategories = createAsyncThunk(
   "category/fetchCategories",
-  async ({ page = 1, search = "" }: { page?: number; search?: string }) => {
-    const response = await api.get(`/api/categories?page=${page}&search=${search}`);
+  async ({
+    page = 1,
+    search = "",
+    size = 10,
+  }: {
+    page?: number;
+    search?: string;
+    size?: number;
+  }) => {
+    console.log("fetchCategories", page, search, size);
+    const response = await api.get(
+      `/api/category?page=${page - 1}&search=${search}&size=${size}`
+    );
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -31,7 +44,7 @@ export const fetchCategories = createAsyncThunk(
 export const addCategory = createAsyncThunk(
   "category/addCategory",
   async (newCategory: Category) => {
-    const response = await api.post("/api/categories", newCategory);
+    const response = await api.post("/api/category", newCategory);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -42,7 +55,10 @@ export const addCategory = createAsyncThunk(
 export const updateCategory = createAsyncThunk(
   "category/updateCategory",
   async (updatedCategory: Category) => {
-    const response = await api.put(`/api/categories/${updatedCategory.id}`, updatedCategory);
+    const response = await api.put(
+      `/api/category/${updatedCategory.id}`,
+      updatedCategory
+    );
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
@@ -53,11 +69,22 @@ export const updateCategory = createAsyncThunk(
 export const deleteCategory = createAsyncThunk(
   "category/deleteCategory",
   async (categoryId: number) => {
-    const response = await api.delete(`/api/categories/${categoryId}`);
+    const response = await api.delete(`/api/category/${categoryId}`);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
     return categoryId;
+  }
+);
+
+export const fetchCategoryById = createAsyncThunk(
+  "category/fetchCategoryById",
+  async (categoryId: number) => {
+    const response = await api.get(`/api/category/${categoryId}`);
+    if (response.data.status === "error") {
+      throw new Error(response.data.message);
+    }
+    return response.data.data as Category;
   }
 );
 
@@ -134,6 +161,21 @@ const categorySlice = createSlice({
       .addCase(deleteCategory.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to delete category";
+      })
+      .addCase(fetchCategoryById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchCategoryById.fulfilled,
+        (state, action: PayloadAction<Category>) => {
+          state.loading = false;
+          state.category = action.payload;
+        }
+      )
+      .addCase(fetchCategoryById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch category";
       });
   },
 });

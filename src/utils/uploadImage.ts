@@ -6,8 +6,10 @@ const uploadImages = async (formData: FormData): Promise<string[]> => {
       "Content-Type": "multipart/form-data",
     },
   });
-
-  return response.data.urls;
+  const url = response.data.data.map((item: string) => {
+    return api.defaults.baseURL + "/api" + item;
+  });
+  return url;
 };
 
 const uploadImage = async (formData: FormData): Promise<string> => {

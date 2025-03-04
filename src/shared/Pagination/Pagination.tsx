@@ -1,61 +1,56 @@
 import { FC } from "react";
-import { Link } from "react-router";
-import { CustomLink } from "../../data/types";
+import { Pagination as PG } from "../../types/pagination.types";
 import twFocusClass from "../../utils/twFocusClass";
 
-const DEMO_PAGINATION: CustomLink[] = [
-  {
-    label: "1",
-    href: "#",
-  },
-  {
-    label: "2",
-    href: "#",
-  },
-  {
-    label: "3",
-    href: "#",
-  },
-  {
-    label: "4",
-    href: "#",
-  },
-];
-
 export interface PaginationProps {
+  pagination?:  PG;
+  onPageChange: (page: number) => void;
   className?: string;
 }
 
-const Pagination: FC<PaginationProps> = ({ className = "" }) => {
-  const renderItem = (pag: CustomLink, index: number) => {
-    if (index === 0) {
-      // RETURN ACTIVE PAGINATION
-      return (
-        <span
-          key={index}
-          className={`inline-flex w-11 h-11 items-center justify-center rounded-full bg-primary-6000 text-white ${twFocusClass()}`}
-        >
-          {pag.label}
-        </span>
-      );
-    }
-    // RETURN UNACTIVE PAGINATION
-    return (
-      <Link
-        key={index}
-        className={`inline-flex w-11 h-11 items-center justify-center rounded-full bg-white hover:bg-neutral-100 border border-neutral-200 text-neutral-6000 dark:text-neutral-400 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:border-neutral-700 ${twFocusClass()}`}
-        to={pag.href}
-      >
-        {pag.label}
-      </Link>
-    );
-  };
+const Pagination: FC<PaginationProps> = ({ pagination, onPageChange, className = "" }) => {
+  const currentPage = pagination?.currentPage ?? 1;
+  const totalPages = pagination?.totalPages ?? 1;
+
+  // Tạo danh sách các trang
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <nav
-      className={`nc-Pagination inline-flex space-x-1 text-base font-medium ${className}`}
-    >
-      {DEMO_PAGINATION.map(renderItem)}
+    <nav className={`nc-Pagination flex space-x-1 text-base font-medium ${className}`}>
+      {/* Nút Previous */}
+      <button
+        className={`w-11 h-11 flex items-center justify-center rounded-full 
+        border ${currentPage === 1 ? "cursor-not-allowed opacity-50" : "hover:bg-neutral-100"} 
+        ${twFocusClass()}`}
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        &laquo;
+      </button>
+
+      {/* Danh sách các trang */}
+      {pages.map((page) => (
+        <button
+          key={page}
+          className={`w-11 h-11 flex items-center justify-center rounded-full border 
+          ${page === currentPage ? "bg-primary-6000 text-white" : "hover:bg-neutral-100"} 
+          ${twFocusClass()}`}
+          onClick={() => onPageChange(page)}
+        >
+          {page}
+        </button>
+      ))}
+
+      {/* Nút Next */}
+      <button
+        className={`w-11 h-11 flex items-center justify-center rounded-full 
+        border ${currentPage === totalPages ? "cursor-not-allowed opacity-50" : "hover:bg-neutral-100"} 
+        ${twFocusClass()}`}
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        &raquo;
+      </button>
     </nav>
   );
 };

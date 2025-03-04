@@ -2,15 +2,18 @@ import { FC } from "react";
 import { Link } from "react-router";
 import { _getPersonNameRd } from "../../contains/fakeData";
 import Avatar from "../../shared/Avatar/Avatar";
+import { Blog } from "../../types";
 
 export interface PostCardMetaProps {
   className?: string;
   hiddenAvatar?: boolean;
+  blog?: Blog;
 }
 
 const PostCardMeta: FC<PostCardMetaProps> = ({
   className = "leading-none",
   hiddenAvatar = false,
+  blog
 }) => {
   return (
     <div
@@ -25,7 +28,9 @@ const PostCardMeta: FC<PostCardMetaProps> = ({
           <Avatar radius="rounded-full" sizeClass={"h-7 w-7 text-sm"} />
         )}
         <span className="block text-neutral-6000 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium">
-          {_getPersonNameRd()}
+          {
+            blog?.author?.username || _getPersonNameRd()
+          }
         </span>
       </Link>
       <>
@@ -33,7 +38,7 @@ const PostCardMeta: FC<PostCardMetaProps> = ({
           ·
         </span>
         <span className="text-neutral-500 dark:text-neutral-400 font-normal line-clamp-1">
-          May 20, 2021
+          {blog?.createdDate || "2021-09-01"}
         </span>
       </>
     </div>

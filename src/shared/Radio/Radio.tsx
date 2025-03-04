@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 
 export interface RadioProps {
   className?: string;
@@ -6,6 +6,7 @@ export interface RadioProps {
   id: string;
   onChange?: (value: string) => void;
   defaultChecked?: boolean;
+  checked?: boolean;
   sizeClassName?: string;
   label?: string;
 }
@@ -18,21 +19,23 @@ const Radio: FC<RadioProps> = ({
   label,
   sizeClassName = "w-6 h-6",
   defaultChecked,
+  checked,
 }) => {
   return (
     <div className={`flex items-center text-sm sm:text-base ${className}`}>
       <input
-        id={id}
+        id={label}
         name={name}
         type="radio"
         className={`focus:ring-action-primary text-primary-500 rounded-full border-slate-400 hover:border-slate-700 bg-transparent dark:border-slate-700 dark:hover:border-slate-500 dark:checked:bg-primary-500 focus:ring-primary-500 ${sizeClassName}`}
-        onChange={(e) => onChange && onChange(e.target.value)}
+        onChange={() => onChange && onChange(id)} // Truyền trực tiếp id thay vì e.target.value
         defaultChecked={defaultChecked}
+        checked={checked}
         value={id}
       />
       {label && (
         <label
-          htmlFor={id}
+          htmlFor={label}
           className="pl-2.5 sm:pl-3 block text-slate-900 dark:text-slate-100 select-none"
           dangerouslySetInnerHTML={{ __html: label }}
         ></label>

@@ -1,5 +1,9 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import CardCategory1 from "../../components/CardCategories/CardCategory1";
+import { fetchBlogCategoryCount } from "../../features/blogCategory/blogCategorySlice";
+import { AppDispatch, RootState } from "../../store";
+import { BlogCategoryCount } from "../../types";
 import WidgetHeading1 from "./WidgetHeading1";
 
 export interface WidgetCategoriesProps {
@@ -9,6 +13,13 @@ export interface WidgetCategoriesProps {
 const WidgetCategories: FC<WidgetCategoriesProps> = ({
   className = "bg-neutral-100 dark:bg-neutral-800",
 }) => {
+  const dispatch: AppDispatch = useDispatch();
+  const { categoryCount } = useSelector((state: RootState) => state.blogCategories);
+
+  useEffect(() => {
+    dispatch(fetchBlogCategoryCount());
+  }, [dispatch]);
+
   return (
     <div
       className={`nc-WidgetCategories rounded-3xl  overflow-hidden ${className}`}
@@ -16,12 +27,13 @@ const WidgetCategories: FC<WidgetCategoriesProps> = ({
     >
       <WidgetHeading1
         title="✨ Trending topic"
-        viewAll={{ label: "View all", href: "/#" }}
+        viewAll={{ label: "", href: "#" }}
       />
       <div className="flow-root">
         <div className="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-700">
-          {[1, 1, 1, 1, 1, 1].map((_, index) => (
+          {categoryCount && categoryCount.map((category: BlogCategoryCount, index: number) => (
             <CardCategory1
+              blogCategory={category}
               className="p-4 xl:p-5 hover:bg-neutral-200 dark:hover:bg-neutral-700"
               key={index}
             />
