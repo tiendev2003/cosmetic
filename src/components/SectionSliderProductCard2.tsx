@@ -1,7 +1,7 @@
 import Glide from "@glidejs/glide";
 import { FC, useEffect, useId, useRef } from "react";
-import Heading from "../components/Heading/Heading";
 import { Product } from "../types";
+import Heading from "./Heading/Heading";
 import ProductCard from "./ProductCard";
 
 export interface SectionSliderProductCardProps {
@@ -14,14 +14,13 @@ export interface SectionSliderProductCardProps {
   data: Product[];
 }
 
-const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
+const SectionSliderProductCard2: FC<SectionSliderProductCardProps> = ({
   className = "",
   itemClassName = "",
   headingFontClassName,
   headingClassName,
   heading,
-  subHeading = "REY backpacks & bags",
-  data
+  subHeading = "REY backpacks & bags", data
 }) => {
   const sliderRef = useRef(null);
   const id = useId();
@@ -78,7 +77,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
           rightDescText={subHeading}
           hasNextPrev
         >
-          {heading}
+          {heading || `New Arrivals`}
         </Heading>
         <div className="glide__track" data-glide-el="track">
           <ul className="glide__slides">
@@ -97,4 +96,4 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   );
 };
 
-export default SectionSliderProductCard;
+export default SectionSliderProductCard2;

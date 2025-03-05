@@ -1,14 +1,15 @@
-import { FC } from "react";
+import { FC, useContext } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import Label from "../../components/Label/Label";
 import { avatarImgs } from "../../contains/fakeData";
-import { changeAvatar, updateUser } from "../../features/auth/authSlice";
+import { AuthContext, AuthContextType } from "../../context/AuthContext";
+import { changeAvatar } from "../../features/auth/authSlice";
 import ButtonPrimary from "../../shared/Button/ButtonPrimary";
 import Input from "../../shared/Input/Input";
 import Textarea from "../../shared/Textarea/Textarea";
-import { AppDispatch, RootState } from "../../store";
+import { AppDispatch } from "../../store";
 import CommonLayout from "./CommonLayout";
 
 export interface AccountPageProps {
@@ -23,7 +24,7 @@ interface FormValues {
 }
 
 const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
-  const { userInfo } = useSelector((state: RootState) => state.auth);
+  const { updateUserInformation,userInformation} = useContext<AuthContextType>(AuthContext as any);
   const dispatch: AppDispatch = useDispatch();
 
   // Khai báo useForm với defaultValues từ userInfo
@@ -33,10 +34,10 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
-      username: userInfo?.username || "",
-      email: userInfo?.email || "",
-      phone: userInfo?.phone || "",
-      bio: userInfo?.bio || "",
+      username: userInformation?.username || "",
+      email: userInformation?.email || "",
+      phone: userInformation?.phone || "",
+      bio: userInformation?.bio || "",
     },
   });
 
@@ -58,7 +59,7 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
     console.log("Form data submitted:", data);
     try {
       // Thêm logic xử lý submit ở đây (ví dụ: gọi API để cập nhật thông tin)
-      await dispatch(updateUser(data)).unwrap();
+      await  updateUserInformation(data);
       toast.success("Account updated successfully");
     } catch (error) {
       toast.error("An error occurred");
@@ -79,11 +80,11 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
                 {/* AVATAR */}
                 <div className="relative rounded-full overflow-hidden flex">
                   <img
-                    src={userInfo?.avatar || avatarImgs[0]}
+                    src={userInformation?.avatar || avatarImgs[0]}
                     alt=""
                     className="w-32 h-32 rounded-full object-cover z-0"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center text-neutral-50 cursor-pointer">
+                  <div className="absolute inset-0 bg-black bg-opacity-20 flex flex-col items-center justify-center text-neutral-50 cursor-pointer">
                     <svg
                       width="30"
                       height="30"

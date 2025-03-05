@@ -12,7 +12,7 @@ export interface PageCollection2Props {
 }
 
 const PageCollection2: FC<PageCollection2Props> = ({ className = "" }) => {
-  const { products, loading, error, pagination } = useSelector((state: RootState) => state.products)
+  const { products,   error, pagination } = useSelector((state: RootState) => state.products)
   const dispatch: AppDispatch = useDispatch()
   const onPageChange = (page: number) => {
     dispatch(fetchProducts({

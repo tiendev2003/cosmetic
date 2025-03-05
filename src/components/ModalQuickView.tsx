@@ -1,6 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { FC, Fragment } from "react";
-import { useLocation } from "react-router";
 import ButtonClose from "../shared/ButtonClose/ButtonClose";
 import { Product } from "../types";
 import ProductQuickView from "./ProductQuickView";
@@ -16,8 +15,7 @@ const ModalQuickView: FC<ModalQuickViewProps> = ({
   onCloseModalQuickView,
   product,
 }) => {
-  const location = useLocation();
-
+ 
   return (
     <Transition appear show={show} as={Fragment}>
       <Dialog

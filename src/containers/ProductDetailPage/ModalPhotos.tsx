@@ -18,7 +18,7 @@ const ModalPhotos: FC<ModalPhotosProps> = ({
   isOpen,
   onClose,
   initFocus = 0,
-  uniqueClassName = "",
+   
 }) => {
   const id = useId();
   const UNIQUE_CLASS = "glidejs" + id.replace(/:/g, "_");

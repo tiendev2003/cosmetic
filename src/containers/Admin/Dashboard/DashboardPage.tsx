@@ -10,17 +10,20 @@ import { fetchOrderStatusCounts, fetchReports } from '../../../features/report/r
 import { AppDispatch, RootState } from '../../../store'
 
 const availableYears = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
-const data = [
-  { name: 'Group A', value: 400 },
-  { name: 'Group B', value: 300 },
-  { name: 'Group C', value: 300 },
-  { name: 'Group D', value: 200 },
-];
+
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: {
+  cx: number,
+  cy: number,
+  midAngle: number,
+  innerRadius: number,
+  outerRadius: number,
+  percent: number,
+  index: number
+}) => {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -89,24 +92,7 @@ const DashboardPage = () => {
   }, [processedData])
 
   // Prepare data for the pie chart
-  const pieChartData = useMemo(() => {
-    return {
-      labels: orderStatusCounts.map(item => item.status),
-      datasets: [
-        {
-          data: orderStatusCounts.map(item => item.orderCount),
-          backgroundColor: [
-            '#FF6384',
-            '#36A2EB',
-            '#FFCE56',
-            '#4BC0C0',
-            '#9966FF',
-            '#FF9F40',
-          ],
-        },
-      ],
-    };
-  }, [orderStatusCounts]);
+
 
   return (
     <div className="container mx-auto px-4 py-8">

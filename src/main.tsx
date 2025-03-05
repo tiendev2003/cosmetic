@@ -6,9 +6,12 @@ import "./index.css";
 import "./styles/index.scss";
 
 import App from './App.tsx';
+import { AuthProvider } from "./context/AuthContext.tsx";
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </StrictMode>,
 )

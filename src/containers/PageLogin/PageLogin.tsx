@@ -1,13 +1,11 @@
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
-import { FC, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router";
-import { userLogin } from "../../features/auth/authSlice";
+import { AuthContext, AuthContextType } from "../../context/AuthContext";
 import ButtonPrimary from "../../shared/Button/ButtonPrimary";
 import Input from "../../shared/Input/Input";
-import { AppDispatch } from "../../store";
 
 export interface PageLoginProps {
   className?: string;
@@ -16,18 +14,20 @@ export interface PageLoginProps {
 const PageLogin: FC<PageLoginProps> = ({ className = "" }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const dispatch: AppDispatch = useDispatch();
+  const { login ,isAuthenticated} = useContext<AuthContextType>(AuthContext as any);
   const navigate = useNavigate();
+  useEffect(() => {
+    if(isAuthenticated){
+      navigate("/");
+    }
+  }
+  ,[isAuthenticated])
+
   const onSubmit = async (data: any) => {
     try {
-      await dispatch(userLogin({
-        email: data.email,
-        password: data.password
-      })).unwrap();
-      // load lại trang để cập nhật trạng thái đăng nhập
-      navigate("/");
-      window.location.reload();
+      const { email, password } = data;
+      await login({ email, password });
+      // navigate("/");
       toast.success("Đăng nhập thành công");
 
     } catch (error) {

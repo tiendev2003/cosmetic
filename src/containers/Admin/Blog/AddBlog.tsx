@@ -18,7 +18,7 @@ const AddBlog = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { blog, loading, error } = useSelector((state: RootState) => state.blogs);
+  const { blog,   } = useSelector((state: RootState) => state.blogs);
   const { categories, } = useSelector((state: RootState) => state.blogCategories);
   const { tags } = useSelector((state: RootState) => state.tags);
   const { users } = useSelector((state: RootState) => state.users);

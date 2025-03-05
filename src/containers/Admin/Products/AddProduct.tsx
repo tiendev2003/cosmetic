@@ -40,13 +40,12 @@ const AddProduct: React.FC = () => {
   const { brands } = useSelector((state: RootState) => state.brands);
   const { categories } = useSelector((state: RootState) => state.categories);
   const { id } = useParams<{ id: string }>();
-  const { product, loading, error } = useSelector((state: RootState) => state.products);
+  const { product } = useSelector((state: RootState) => state.products);
   const dispatch: AppDispatch = useDispatch();
   const {
     register,
     handleSubmit,
-    control,
-    formState: { errors },
+     formState: { errors },
     watch,
     reset,
   } = useForm<FormInputs>({

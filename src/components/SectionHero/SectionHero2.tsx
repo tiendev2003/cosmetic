@@ -44,7 +44,8 @@ const DATA: Hero2DataType[] = [
     btnLink: "/",
   },
 ];
-let TIME_OUT: NodeJS.Timeout | null = null;
+let TIME_OUT: ReturnType<typeof setTimeout>
+  | null = null;
 
 const SectionHero2: FC<SectionHero2Props> = ({ className = "" }) => {
   // =================
@@ -127,9 +128,8 @@ const SectionHero2: FC<SectionHero2Props> = ({ className = "" }) => {
                 >
                   {isActive && (
                     <div
-                      className={`nc-SectionHero2Item__dot absolute inset-0 bg-slate-900 rounded-md ${
-                        isActive ? " " : " "
-                      }`}
+                      className={`nc-SectionHero2Item__dot absolute inset-0 bg-slate-900 rounded-md ${isActive ? " " : " "
+                        }`}
                     ></div>
                   )}
                 </div>

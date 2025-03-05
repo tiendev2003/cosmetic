@@ -1,12 +1,9 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import Prices from "../../components/Prices";
-import { PRODUCTS } from "../../data/data";
 import { fetchUserOrders } from "../../features/order/orderSlice";
 import ButtonSecondary from "../../shared/Button/ButtonSecondary";
 import { AppDispatch, RootState } from "../../store";
-import { Order } from "../../types";
 import formatDate from "../../utils/formatDate";
 import formatCurrencyVND from "../../utils/formatMoney";
 import CommonLayout from "./CommonLayout";
@@ -22,9 +19,6 @@ const AccountOrder = () => {
 
 
 
-  if (loading) {
-    return <div className="px-6 py-4 text-center text-sm text-gray-500">Đang tải dữ liệu...</div>;
-  }
   if (error) {
     return <div className="px-6 py-4 text-center text-sm text-gray-500">{error}</div>;
   }
@@ -67,42 +61,59 @@ const AccountOrder = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {
-                    orders.map((order, index) => (
-                      <tr key={order.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{order.id}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{formatDate(order.orderDate)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{formatCurrencyVND(order.totalAmount)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{order.orderItems.length}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{formatCurrencyVND(order.finalAmount)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{order.status}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            <ButtonSecondary
-                              type="button"
-                              onClick={() => {
-                                navigate(`/account-my-order/${order.id}`);
-                              }}
-                              sizeClass="py-2.5 px-4 sm:px-6"
-                              fontSize="text-sm font-medium"
-                            >
-                              Xem chi tiết
-                            </ButtonSecondary>
+                    loading ? (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                           </div>
                         </td>
                       </tr>
-                    ))
+                    ) :
+                      orders.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="text-sm text-gray-900">Không có đơn hàng nào</div>
+                          </td>
+                        </tr>
+                      ) :
+
+                        orders.map((order, index) => (
+                          <tr key={index}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{order.id}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{formatDate(order.orderDate)}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{formatCurrencyVND(order.totalAmount)}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{order.orderItems.length}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{formatCurrencyVND(order.finalAmount)}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{order.status}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                <ButtonSecondary
+                                  type="button"
+                                  onClick={() => {
+                                    navigate(`/account-my-order/${order.id}`);
+                                  }}
+                                  sizeClass="py-2.5 px-4 sm:px-6"
+                                  fontSize="text-sm font-medium"
+                                >
+                                  Xem chi tiết
+                                </ButtonSecondary>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
 
                   }
 

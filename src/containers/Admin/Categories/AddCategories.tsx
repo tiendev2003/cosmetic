@@ -8,15 +8,12 @@ import { AppDispatch, RootState } from '../../../store';
 import { Category } from '../../../types';
 import { uploadImage } from '../../../utils/uploadImage';
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
+ 
 const AddCategories = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { category, loading, error } = useSelector((state: RootState) => state.categories);
+  const { category,   } = useSelector((state: RootState) => state.categories);
 
   // State cho form
   const [formData, setFormData] = useState({

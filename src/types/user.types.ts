@@ -14,9 +14,27 @@ export interface User {
   locked: boolean;
 }
 
+export interface UserResponse {
+  status: string;
+  message: string;
+  data: User;
+}
+
+
 export interface UserListResponse {
   status: string;
   message: string;
   data: User[];
   pagination: Pagination;
+}
+
+export interface AuthResponse{
+  data: {
+    user: User;
+    token: string;
+  }
+}
+export interface PasswordData {
+  currentPassword: string;
+  newPassword: string;
 }

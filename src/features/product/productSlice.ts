@@ -197,6 +197,7 @@ export const fetchTopSellingProducts = createAsyncThunk(
   "product/fetchTopSellingProducts",
   async () => {
     const response = await api.get("/api/products/top-selling");
+    console.log(response.data);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }

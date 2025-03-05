@@ -488,7 +488,7 @@ const TabFilters = () => {
   const renderTabsPriceRage = () => {
     return (
       <Popover className="relative">
-        {({ open, close }) => (
+        {({   close }) => (
           <>
             <Popover.Button
               className={`flex items-center justify-center px-4 py-2 text-sm rounded-full border border-primary-500 bg-primary-50 text-primary-900 focus:outline-none `}

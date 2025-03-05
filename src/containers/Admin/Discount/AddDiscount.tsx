@@ -10,7 +10,7 @@ const AddDiscount = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { discount, loading, error } = useSelector((state: RootState) => state.discounts);
+  const { discount,   } = useSelector((state: RootState) => state.discounts);
 
   // State cho form
   const [formData, setFormData] = useState({

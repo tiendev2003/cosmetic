@@ -1,6 +1,6 @@
-import { CustomLink } from "data/types";
 import { FC } from "react";
 import { Link } from "react-router";
+import { CustomLink } from "../../data/types";
 
 export interface WidgetHeading1Props {
   className?: string;

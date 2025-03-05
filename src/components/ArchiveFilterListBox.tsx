@@ -1,7 +1,6 @@
-import React, { FC } from "react";
-import { Fragment, useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon } from "@heroicons/react/24/solid";
+import { FC, Fragment, useState } from "react";
 import ButtonDropdown from "./ButtonDropdown";
 
 export interface ArchiveFilterListBoxProps {

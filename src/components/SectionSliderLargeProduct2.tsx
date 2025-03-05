@@ -170,7 +170,7 @@ const SectionSliderLargeProduct2: FC<SectionSliderLargeProduct2Props> = ({
           <ul className="glide__slides">
             {DEMO_LARGE_PRODUCTS.map((item, index) => {
               return (
-                <li className={`glide__slide`}>
+                <li className={`glide__slide`} key={index}>
                   <MyCollectionCard imgs={item.images} />
                 </li>
               );

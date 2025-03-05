@@ -19,7 +19,11 @@ export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/api/cart");
+      const response = await api.get("/api/cart", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (response.data.status === "error") {
         console.log(response.data.message);
         throw new Error(response.data.message);
@@ -112,10 +116,7 @@ const cartSlice = createSlice({
         state.loading = false;
         state.cart = action.payload;
       })
-      .addCase(fetchCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = "Vui lòng đăng nhập để xem giỏ hàng";
-      })
+
       .addCase(addCartItem.pending, (state) => {
         state.loading = true;
         state.error = null;

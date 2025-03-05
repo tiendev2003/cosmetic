@@ -1,6 +1,5 @@
 import { StarIcon } from "@heroicons/react/24/solid";
-import React, { FC, useEffect } from "react";
-import { useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 export interface FiveStartIconForRateProps {
   className?: string;

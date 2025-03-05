@@ -13,7 +13,7 @@ import formatCurrencyVND from "../../utils/formatMoney";
 
 const CartPage = () => {
 
-  const { cart, loading, error } = useSelector((state: RootState) => state.carts)
+  const { cart,  error } = useSelector((state: RootState) => state.carts)
   const dispatch: AppDispatch = useDispatch()
   useEffect(() => {
     dispatch(fetchCart())
@@ -33,7 +33,7 @@ const CartPage = () => {
         productId: id,
         quantity: quantity
       })).unwrap();
-     } catch (error) {
+    } catch (error) {
       console.log(error);
       toast.error("Có lỗi xảy ra khi cập nhật số lượng sản phẩm trong giỏ hàng");
     }
@@ -195,12 +195,6 @@ const CartPage = () => {
       </div>
     );
   };
-  if (loading)
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
   if (error)
     return (
       <div className="flex items-center justify-center min-h-screen">

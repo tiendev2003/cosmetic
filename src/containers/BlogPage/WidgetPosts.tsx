@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import Card3Small from "./Card3Small";
 import WidgetHeading1 from "./WidgetHeading1";
 

@@ -28,7 +28,7 @@ const CardCategory5: FC<CardCategory5Props> = ({
   className = "",
   featuredImage = images1,
   name,
-  desc,
+   
   index,
 }) => {
   return (

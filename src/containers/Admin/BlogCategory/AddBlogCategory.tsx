@@ -10,7 +10,7 @@ const AddBlogCategory = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { category, loading, error } = useSelector((state: RootState) => state.blogCategories);
+  const { category,   } = useSelector((state: RootState) => state.blogCategories);
 
   // State cho form
   const [formData, setFormData] = useState({

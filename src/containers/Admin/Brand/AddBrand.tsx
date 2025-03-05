@@ -12,7 +12,7 @@ const AddBrand = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { brand, loading, error } = useSelector((state: RootState) =>
+  const { brand } = useSelector((state: RootState) =>
     state.brands
   );
   console.log('fetchBrandById',id);

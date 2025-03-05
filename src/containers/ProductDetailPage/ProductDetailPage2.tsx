@@ -257,10 +257,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
   };
 
   const renderReviews = () => {
-    const reviewsCount = product?.reviews?.length || 0;
-    const averageRating = reviewsCount > 0
-      ? product.reviews.reduce((acc, review) => acc + review.star, 0) / reviewsCount
-      : 0;
+      
 
     return (
       <div id="reviews" className="scroll-mt-[150px]">

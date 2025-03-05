@@ -13,18 +13,22 @@ import SectionPromo3 from "../../components/SectionPromo3";
 import SectionSliderCategories from "../../components/SectionSliderCategories/SectionSliderCategories";
 import SectionSliderLargeProduct from "../../components/SectionSliderLargeProduct";
 import SectionSliderProductCard from "../../components/SectionSliderProductCard";
+import SectionSliderProductCard2 from "../../components/SectionSliderProductCard2";
 import SectionMagazine5 from "../../containers/BlogPage/SectionMagazine5";
-import { PRODUCTS, SPORT_PRODUCTS } from "../../data/data";
 import { fetchBlogs, fetchNewBlog } from "../../features/blog/blogSlice";
+import { fetchNewArrivalsProducts, fetchTopSellingProducts } from "../../features/product/productSlice";
 import ButtonSecondary from "../../shared/Button/ButtonSecondary";
 import { AppDispatch, RootState } from "../../store";
 
 function PageHome() {
   const dispatch: AppDispatch = useDispatch();
-  const { blogNew, blogs, loading, pagination, error } = useSelector((state: RootState) => state.blogs);
-const navigate = useNavigate();
+  const { blogNew, loading, } = useSelector((state: RootState) => state.blogs);
+  const { productTopSelling, productArrivals } = useSelector((state: RootState) => state.products);
+  const navigate = useNavigate();
   useEffect(() => {
     dispatch(fetchNewBlog());
+    dispatch(fetchTopSellingProducts());
+    dispatch(fetchNewArrivalsProducts());
     dispatch(fetchBlogs({ page: 1, size: 10, search: "" }));
   }, [dispatch]);
   return (
@@ -38,14 +42,8 @@ const navigate = useNavigate();
 
       <div className="container relative space-y-24 my-24 lg:space-y-32 lg:my-32">
         {/* SECTION */}
-        <SectionSliderProductCard
-          data={[
-            PRODUCTS[4],
-            SPORT_PRODUCTS[5],
-            PRODUCTS[7],
-            SPORT_PRODUCTS[1],
-            PRODUCTS[6],
-          ]}
+        <SectionSliderProductCard2
+          data={productArrivals}
         />
 
         <div className="py-24 lg:py-32 border-t border-b border-slate-200 dark:border-slate-700">
@@ -68,6 +66,7 @@ const navigate = useNavigate();
         <SectionPromo3 />
 
         <SectionSliderProductCard
+          data={productTopSelling}
           heading="Best Sellers"
           subHeading="Best selling of the month"
         />
@@ -78,7 +77,7 @@ const navigate = useNavigate();
             <Heading rightDescText="Từ bài viết của Beautico">
               Bài viết mới nhất
             </Heading>
-            <SectionMagazine5  blogLatest={blogNew} loading={loading} />
+            <SectionMagazine5 blogLatest={blogNew} loading={loading} />
             <div className="flex mt-16 justify-center">
               <ButtonSecondary type="button" onClick={() => {
                 navigate("/bai-viet");

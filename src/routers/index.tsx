@@ -1,12 +1,11 @@
+import { useContext, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
-import { useSelector } from "react-redux";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import AccountBilling from "../containers/AccountPage/AccountBilling";
 import AccountOrder from "../containers/AccountPage/AccountOrder";
 import AccountOrderDetail from "../containers/AccountPage/AccountOrderDetail";
 import AccountPage from "../containers/AccountPage/AccountPage";
 import AccountPass from "../containers/AccountPage/AccountPass";
-import AccountSavelists from "../containers/AccountPage/AccountSavelists";
 import AddBlog from "../containers/Admin/Blog/AddBlog";
 import ListBlog from "../containers/Admin/Blog/ListBlog";
 import AddBlogCategory from "../containers/Admin/BlogCategory/AddBlogCategory";
@@ -33,24 +32,20 @@ import PageContact from "../containers/PageContact/PageContact";
 import PageFaq from "../containers/PageFaq/PageFaq";
 import PageHome from "../containers/PageHome/PageHome";
 import PageLogin from "../containers/PageLogin/PageLogin";
-import PageSearch from "../containers/PageSearch";
 import PageSignUp from "../containers/PageSignUp/PageSignUp";
 import CartPage from "../containers/ProductDetailPage/CartPage";
-import ProductDetailPage from "../containers/ProductDetailPage/ProductDetailPage";
 import ProductDetailPage2 from "../containers/ProductDetailPage/ProductDetailPage2";
 import SiteHeader from "../containers/SiteHeader";
+import { AuthContext, AuthContextType } from "../context/AuthContext";
 import AdminLayout from "../layout/AdminLayout";
 import Footer from "../shared/Footer/Footer";
-import { RootState } from "../store";
 import ScrollToTop from "./ScrollToTop";
 import { Page } from "./types";
 
 export const pages: Page[] = [
   { path: "/", component: PageHome },
-  { path: "/cua-hang1/:id", component: ProductDetailPage },
   { path: "/cua-hang/:id", component: ProductDetailPage2 },
   { path: "/cua-hang", component: PageCollection2 },
-  { path: "/page-search", component: PageSearch },
   { path: "/bai-viet", component: BlogPage },
   { path: "/bai-viet/:id", component: BlogSingle },
   { path: "/cau-hoi-thuong-gap", component: PageFaq },
@@ -60,13 +55,12 @@ export const pages: Page[] = [
 ];
 export const privatePages: Page[] = [
   { path: "/account", component: AccountPage },
-  { path: "/account-savelists", component: AccountSavelists },
+  { path: "/cart", component: CartPage },
   { path: "/account-change-password", component: AccountPass },
   { path: "/account-address", component: AccountBilling },
   { path: "/account-my-order", component: AccountOrder },
   { path: "/account-my-order/:id", component: AccountOrderDetail },
   { path: "/checkout", component: CheckoutPage },
-  { path: "/cart", component: CartPage },
 ]
 
 export const adminPages: Page[] = [
@@ -162,40 +156,63 @@ export const adminPages: Page[] = [
 ]
 
 const MyRoutes = () => {
-  const { userInfo } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, userRole, loading } = useContext<AuthContextType>(AuthContext as any);
+  const [showLoading, setShowLoading] = useState(true);
+
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setShowLoading(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowLoading(false);
+    }
+  }, [loading]);
+
+  if (showLoading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  }
+
   return (
     <BrowserRouter>
       <Toaster />
       <ScrollToTop />
       <Routes>
-
         {pages.map(({ component: Component, path }, index) => {
           return <Route key={index} element={<>
             <SiteHeader />
             <Component /> <Footer />
           </>} path={path} />;
         })}
-
-        {
-          userInfo && userInfo.role !== null &&
-          privatePages.map(({ component: Component, path }, index) => {
-            return <Route key={index} element={<>
-              <SiteHeader />
-              <Component /> <Footer />
-            </>} path={path} />;
-          })}
-        <Route path="/" element={<AdminLayout />}>
-          {
-            userInfo && userInfo.role === "ADMIN" &&
-            adminPages.map(({ component: Component, path }, index) => {
-              return <Route key={index} element={<>
-                <Component />
-              </>} path={path} />;
-            })
-          }
-        </Route>
-
-
+        {isAuthenticated ? (
+          userRole === "USER"
+            ? (
+              privatePages.map(({ component: Component, path }, index) => {
+                return <Route key={index} element={<>
+                  <SiteHeader />
+                  <Component />
+                  <Footer />
+                </>} path={path} />;
+              })
+            ) : userRole === "ADMIN" ? (
+              <Route path="/" element={<AdminLayout />}>
+                {
+                  adminPages.map(({ component: Component, path }, index) => {
+                    return <Route key={index} element={<>
+                      <Component />
+                    </>} path={path} />;
+                  })
+                }
+              </Route>
+            ) : (
+              <Route path="*" element={<Navigate to="/" />} />
+            )
+        ) : (
+          <Route path="*" element={<Navigate to="/" />} />
+        )}
         <Route path="/signup" element={<>
           <SiteHeader />
           <PageSignUp /> <Footer />
