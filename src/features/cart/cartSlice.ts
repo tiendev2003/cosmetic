@@ -105,7 +105,14 @@ export const fetchUrlMomo = createAsyncThunk(
 const cartSlice = createSlice({
   name: "cart",
   initialState,
-  reducers: {},
+  reducers: {
+    // clearCarrt 
+    clearCartNew: (state) => {
+      state.cart = null;
+      state.error = null;
+      state.loading = false;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCart.pending, (state) => {
@@ -116,6 +123,9 @@ const cartSlice = createSlice({
         state.loading = false;
         state.cart = action.payload;
       })
+      .addCase(fetchCart.rejected, (state,  ) => {
+        state.loading = false;
+       })
 
       .addCase(addCartItem.pending, (state) => {
         state.loading = true;
@@ -178,5 +188,7 @@ const cartSlice = createSlice({
       });
   },
 });
+
+export const { clearCartNew } = cartSlice.actions;
 
 export default cartSlice.reducer;

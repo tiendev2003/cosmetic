@@ -1,4 +1,5 @@
 import { Provider } from "react-redux"
+import { AuthProvider } from "./context/AuthContext.tsx"
 import MyRoutes from "./routers/index.tsx"
 import { store } from "./store/index.tsx"
 function App() {
@@ -27,7 +28,9 @@ function App() {
       <link rel="preconnect" href="https://fonts.gstatic.com" />
       <div className="bg-white text-base dark:bg-slate-900 text-slate-900 dark:text-slate-200">
         <Provider store={store}>
-          <MyRoutes />
+          <AuthProvider>
+            <MyRoutes />
+          </AuthProvider>
         </Provider>
 
       </div>

@@ -1,6 +1,9 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
 import api from "../api/api";
+import { clearCartNew } from "../features/cart/cartSlice";
+import { AppDispatch } from "../store";
 import { AuthResponse, LoginCredentials, PasswordData, User, UserResponse, } from "../types";
 
 export interface AuthContextType {
@@ -24,7 +27,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [userInformation, setUserInformation] = useState<User | null>(null);
-
+  const dispatch: AppDispatch = useDispatch();
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -81,11 +84,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const logout = (): void => {
+  const logout = async (): Promise<void> => {
+    console.log("logout");
     setIsAuthenticated(false);
+    localStorage.removeItem("token"); // Remove token
     setUserRole(null);
     setUserInformation(null);
-    localStorage.removeItem("token"); // Remove token
+    dispatch(clearCartNew())
+    toast.success("Đăng xuất thành công");
   };
 
   const updateUserInformation = async (updatedInfo: Partial<User>): Promise<void> => {

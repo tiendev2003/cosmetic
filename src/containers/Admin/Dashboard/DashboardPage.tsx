@@ -97,13 +97,13 @@ const DashboardPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Revenue Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Thống kê</h1>
 
         <div className="w-full sm:w-64">
           <Listbox value={selectedYear} onChange={setSelectedYear}>
             <div className="relative mt-1">
               <Listbox.Button className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-300 sm:text-sm">
-                <span className="block truncate">Year: {selectedYear}</span>
+                <span className="block truncate">Năm: {selectedYear}</span>
                 <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                   <ChevronDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 </span>

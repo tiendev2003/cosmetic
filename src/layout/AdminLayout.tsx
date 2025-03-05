@@ -14,11 +14,9 @@ import {
     UsersIcon,
     XMarkIcon
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { NavLink, Outlet, useNavigate } from 'react-router';
-import { logout } from '../features/auth/authSlice';
-import { AppDispatch } from '../store';
+import { useContext, useState } from 'react';
+import { NavLink, Outlet } from 'react-router';
+import { AuthContext, AuthContextType } from '../context/AuthContext';
 
 interface MenuItem {
     name: string;
@@ -97,16 +95,14 @@ export default function AdminLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
     const navigation = generateNavigation();
-    const dispatch: AppDispatch = useDispatch()
-    const navigate = useNavigate();
+    const { logout } = useContext<AuthContextType>(AuthContext as any);
     const toggleMenuItem = (name: string) => {
         setExpandedItems((prev) =>
             prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]
         );
     };
     const handleLogout = () => {
-        dispatch(logout())
-        navigate('/login')
+        logout();
     }
 
     return (

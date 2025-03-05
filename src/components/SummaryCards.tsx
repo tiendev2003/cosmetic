@@ -1,3 +1,4 @@
+import formatCurrencyVND from "../utils/formatMoney"
 import { CurrencyDollarIcon, ShoppingCartIcon, TrendingDownIcon } from "./Icons"
 
 interface SummaryProps {
@@ -9,13 +10,7 @@ interface SummaryProps {
 }
 
 const SummaryCards = ({ summary }: SummaryProps) => {
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
+ 
 
   const discountAmount = summary.totalRevenue - summary.totalDiscountedRevenue
   const discountPercentage = summary.totalRevenue > 0 ? ((discountAmount / summary.totalRevenue) * 100).toFixed(1) : "0"
@@ -28,8 +23,8 @@ const SummaryCards = ({ summary }: SummaryProps) => {
             <CurrencyDollarIcon className="h-6 w-6" />
           </div>
           <div className="ml-4">
-            <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-            <p className="text-2xl font-semibold text-gray-900">{formatCurrency(summary.totalRevenue)}</p>
+            <p className="text-sm font-medium text-gray-500">Tổng doanh thu</p>
+            <p className="text-2xl font-semibold text-gray-900">{formatCurrencyVND(summary.totalRevenue)}</p>
           </div>
         </div>
       </div>
@@ -40,9 +35,9 @@ const SummaryCards = ({ summary }: SummaryProps) => {
             <TrendingDownIcon className="h-6 w-6" />
           </div>
           <div className="ml-4">
-            <p className="text-sm font-medium text-gray-500">Discounts</p>
+            <p className="text-sm font-medium text-gray-500">Số tiền giảm</p>
             <p className="text-2xl font-semibold text-gray-900">
-              {formatCurrency(discountAmount)} <span className="text-sm text-gray-500">({discountPercentage}%)</span>
+              {formatCurrencyVND(discountAmount)} <span className="text-sm text-gray-500">({discountPercentage}%)</span>
             </p>
           </div>
         </div>
@@ -54,7 +49,7 @@ const SummaryCards = ({ summary }: SummaryProps) => {
             <ShoppingCartIcon className="h-6 w-6" />
           </div>
           <div className="ml-4">
-            <p className="text-sm font-medium text-gray-500">Total Orders</p>
+            <p className="text-sm font-medium text-gray-500">Tổng số đơn hàng</p>
             <p className="text-2xl font-semibold text-gray-900">{summary.totalOrders.toLocaleString()}</p>
           </div>
         </div>

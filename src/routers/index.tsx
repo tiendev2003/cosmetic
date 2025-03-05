@@ -26,13 +26,16 @@ import BlogPage from "../containers/BlogPage/BlogPage";
 import BlogSingle from "../containers/BlogPage/BlogSingle";
 import Page404 from "../containers/Page404/Page404";
 import PageAbout from "../containers/PageAbout/PageAbout";
+import PageChangePass from "../containers/PageChangePass/PageChangePass";
 import CheckoutPage from "../containers/PageCheckout/CheckoutPage";
 import PageCollection2 from "../containers/PageCollection2";
 import PageContact from "../containers/PageContact/PageContact";
 import PageFaq from "../containers/PageFaq/PageFaq";
+import PageForgotPassword from "../containers/PageForgotPassword/PageForgotPassword";
 import PageHome from "../containers/PageHome/PageHome";
 import PageLogin from "../containers/PageLogin/PageLogin";
 import PageSignUp from "../containers/PageSignUp/PageSignUp";
+import PageVerifyOtp from "../containers/PageVerify/PageVerifyOtp";
 import CartPage from "../containers/ProductDetailPage/CartPage";
 import ProductDetailPage2 from "../containers/ProductDetailPage/ProductDetailPage2";
 import SiteHeader from "../containers/SiteHeader";
@@ -220,6 +223,21 @@ const MyRoutes = () => {
         <Route path="/login" element={<>
           <SiteHeader />
           <PageLogin /> <Footer />
+        </>} />
+        <Route path="/forgot-password" element={<>
+          <SiteHeader />
+          <PageForgotPassword />
+          <Footer />
+        </>} />
+        <Route path="/change-password-new" element={<>
+          <SiteHeader />
+          <PageChangePass />
+          <Footer />
+        </>} />
+        <Route path="/verify-otp" element={<>
+          <SiteHeader />
+          <PageVerifyOtp />
+          <Footer />
         </>} />
         <Route path="*" element={<>
           <SiteHeader />

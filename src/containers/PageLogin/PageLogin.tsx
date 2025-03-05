@@ -63,7 +63,7 @@ const PageLogin: FC<PageLoginProps> = ({ className = "" }) => {
             <label className="block">
               <span className="flex justify-between items-center text-neutral-800 dark:text-neutral-200">
                 Mật khẩu
-                <Link to="/forgot-pass" className="text-sm text-green-600">
+                <Link to="/forgot-password" className="text-sm text-green-600">
                   Quên mật khẩu?
                 </Link>
               </span>

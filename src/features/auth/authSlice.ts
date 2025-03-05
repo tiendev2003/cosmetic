@@ -135,7 +135,7 @@ export const changePassword = createAsyncThunk<
     try {
       await api.post(`/api/user/change-password`, {
         oldPassword: currentPassword,
-        newPassword :newPassword,
+        newPassword: newPassword,
       });
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
@@ -151,6 +151,72 @@ export const getUserInfo = createAsyncThunk("auth/getInfo", async () => {
   const { data } = await api.get<UserInfo>(`/api/user/me`);
   return data.data;
 });
+
+export const changePass = createAsyncThunk(
+  "auth/changePass",
+  async (
+    {
+      email,
+      currentPassword,
+      newPassword,
+    }: { currentPassword: string; newPassword: string; email: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      await api.post(
+        `/api/user/password?email=${email}&password=${currentPassword}&newPassword=${newPassword}`
+      );
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
+    }
+  }
+);
+
+export const forgotPassword = createAsyncThunk(
+  "auth/forgotPassword",
+  async (email: string, { rejectWithValue }) => {
+    try {
+      await api.post(`/api/user/send-otp?email=${email}`);
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
+    }
+  }
+);
+
+export const verifyOtp = createAsyncThunk(
+  "auth/verifyOtp",
+  async (
+    {
+      otp,
+      email,
+    }: {
+      otp: string;
+      email: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      await api.post(`/api/user/verify-otp?email=${email}&otp=${otp}`);
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
+    }
+  }
+);
 
 // Khởi tạo state
 const initialState: AuthState = {
