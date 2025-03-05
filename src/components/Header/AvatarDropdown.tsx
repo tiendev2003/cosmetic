@@ -7,7 +7,7 @@ import Avatar from "../../shared/Avatar/Avatar";
 import SwitchDarkMode2 from "../../shared/SwitchDarkMode/SwitchDarkMode2";
 
 export default function AvatarDropdown() {
-  const { logout, userInformation, isAuthenticated } = useContext<AuthContextType>(AuthContext as any);
+  const { logout, userInformation } = useContext<AuthContextType>(AuthContext as any);
 
   const handleLogout = () => {
     logout();
