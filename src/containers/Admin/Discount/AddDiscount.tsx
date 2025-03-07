@@ -244,7 +244,7 @@ const AddDiscount = () => {
         {/* Buttons */}
         <div className="flex justify-end space-x-3">
           <NavLink
-            to="/admin/discount"
+            to="/admin/discounts"
             className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
           >
             Cancel

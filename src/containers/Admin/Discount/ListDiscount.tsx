@@ -41,6 +41,7 @@ const ListDiscount = () => {
         await dispatch(deleteDiscount(selectedDiscountId)).unwrap();
         toast.success('Xóa giảm giá thành công!');
         closeDeleteModal();
+        dispatch(fetchDiscounts({ page: 1, search: searchName, size: pageSize })); // Cập nhật lại danh sách với pageSize hiện tại
       } catch (error) {
         console.error(error);
         toast.error('Xóa giảm giá thất bại!');
@@ -49,17 +50,17 @@ const ListDiscount = () => {
   };
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchDiscounts({ page, search: searchName }));
+    dispatch(fetchDiscounts({ page, search: searchName, size: pageSize })); // Thêm size vào đây
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(e.target.value);
     setPageSize(newSize);
-    dispatch(fetchDiscounts({ page: 1, search: searchName }));
+    dispatch(fetchDiscounts({ page: 1, search: searchName, size: newSize })); // Gọi ngay với size mới
   };
 
   const debouncedSearch = debounce((value: string) => {
-    dispatch(fetchDiscounts({ page: 1, search: value }));
+    dispatch(fetchDiscounts({ page: 1, search: value, size: pageSize })); // Thêm size vào đây
   }, 300);
 
   const handleSearchName = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,7 +149,7 @@ const ListDiscount = () => {
                   <td className="px-6 py-4 text-sm text-gray-500">{discount.maxDiscountAmount}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                       
+
                       <NavLink
                         to={`/admin/discounts/edit/${discount.id}`}
                         className="text-indigo-600 hover:text-indigo-900"

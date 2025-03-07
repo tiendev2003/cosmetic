@@ -17,7 +17,6 @@ import formatCurrencyVND from "../../utils/formatMoney";
 import AccordionInfo from "./AccordionInfo";
 import ModalPhotos from "./ModalPhotos";
 import ModalViewAllReviews from "./ModalViewAllReviews";
-import Policy from "./Policy";
 
 export interface ProductDetailPage2Props {
   className?: string;
@@ -214,26 +213,26 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
         </div>
         <div className="block lg:hidden">{renderSectionSidebar()}</div>
         <div className="w-14 border-b border-neutral-200 dark:border-neutral-700"></div>
-        <AccordionInfo panelClassName="p-4 pt-3.5 text-slate-600 text-base dark:text-slate-300 leading-7" />
+        <AccordionInfo
+          data={[
+            {
+              name: "Description",
+              content: product?.description,
+            },
+            {
+              name: "Ingredients",
+              content: product?.ingredients,
+            },
+            {
+              name: "Usage",
+              content: product?.productUsage,
+            },
+          ]}
+        />
       </div>
     );
   };
 
-  const renderSection2 = () => {
-    return (
-      <div className="listingSection__wrap !border-b-0 !pb-0">
-        <h2 className="text-2xl font-semibold">Product details</h2>
-        <div className="prose prose-sm sm:prose dark:prose-invert sm:max-w-4xl">
-          <p>{product.description}</p>
-          <ul>
-            <li>Ingredients: {product.ingredients}</li>
-            <li>Usage: {product.productUsage}</li>
-          </ul>
-        </div>
-        <Policy />
-      </div>
-    );
-  };
 
   const renderReviews = () => {
 
@@ -275,24 +274,27 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
               className="col-span-2 md:col-span-1 row-span-2 relative rounded-md sm:rounded-xl overflow-hidden cursor-pointer"
               onClick={() => handleOpenModal(0)}
             >
-              <NcImage
-                containerClassName="aspect-w-3 aspect-h-4 md:absolute md:inset-0"
+              <img
                 className="object-cover w-full h-full rounded-md sm:rounded-xl"
                 src={product?.productImages[0]?.image}
               />
               <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-40 transition-opacity"></div>
             </div>
-            <div
-              className="col-span-1 row-span-2 relative rounded-md sm:rounded-xl overflow-hidden cursor-pointer"
-              onClick={() => handleOpenModal(1)}
-            >
-              <NcImage
-                containerClassName="absolute inset-0"
-                className="object-cover w-full h-full rounded-md sm:rounded-xl"
-                src={product?.productImages[1]?.image}
-              />
-              <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-40 transition-opacity"></div>
-            </div>
+            {
+              product?.productImages[1]?.image && (
+                <div
+                  className="col-span-1 row-span-2 relative rounded-md sm:rounded-xl overflow-hidden cursor-pointer"
+                  onClick={() => handleOpenModal(1)}
+                >
+                  <img
+                    className="object-container w-full h-fulll rounded-md sm:rounded-xl"
+                    src={product?.productImages[1]?.image}
+                  />
+                  <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-40 transition-opacity"></div>
+                </div>
+              )
+            }
+
             {product?.productImages?.slice(2).map((item, index) => (
               <div
                 key={index}
@@ -336,7 +338,6 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
       <main className="container relative z-10 mt-9 sm:mt-11 flex">
         <div className="w-full lg:w-3/5 xl:w-2/3 space-y-10 lg:pr-14 lg:space-y-14">
           {renderSection1()}
-          {renderSection2()}
         </div>
         <div className="flex-grow">
           <div className="hidden lg:block sticky top-28">{renderSectionSidebar()}</div>

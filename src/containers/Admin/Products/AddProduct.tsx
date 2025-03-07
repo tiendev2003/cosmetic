@@ -34,6 +34,10 @@ const calculateDiscountedPrice = (price: number, discountPercentage: number) => 
   return price - (price * discountPercentage) / 100;
 };
 
+const calculateDiscountPercentage = (price: number, salePrice: number) => {
+  return Math.round(((price - salePrice) / price) * 100);
+};
+
 const AddProduct: React.FC = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
@@ -50,11 +54,13 @@ const AddProduct: React.FC = () => {
     formState: { errors },
     watch,
     reset,
+    setValue,
   } = useForm<FormInputs>({
     defaultValues: {
       status: "ACTIVE",
       isSale: false,
       salePrice: null,
+      discountPercentage: null,
     },
   })
   const navigate = useNavigate();
@@ -64,13 +70,12 @@ const AddProduct: React.FC = () => {
 
   const discountedPrice = watchPrice && watchDiscountPercentage
     ? calculateDiscountedPrice(watchPrice, watchDiscountPercentage)
-    : null;
+    : watch("salePrice");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
 
-    // Preview images
     const newImagePreviewUrls = files.map((file) => URL.createObjectURL(file))
     setImagePreviewUrls((prev) => [...prev, ...newImagePreviewUrls])
     setSelectedImages((prev) => [...prev, ...files])
@@ -81,21 +86,18 @@ const AddProduct: React.FC = () => {
     setImagePreviewUrls((prev) => prev.filter((_, i) => i !== index))
     setSelectedImages((prev) => prev.filter((_, i) => i !== index))
   }
+
   useEffect(() => {
-    dispatch(fetchBrands(
-      {
-        page: 1,
-        search: "",
-        size: 100,
-      }
-    ));
-    dispatch(fetchCategories(
-      {
-        page: 1,
-        search: "",
-        size: 100,
-      }
-    ));
+    dispatch(fetchBrands({
+      page: 1,
+      search: "",
+      size: 100,
+    }));
+    dispatch(fetchCategories({
+      page: 1,
+      search: "",
+      size: 100,
+    }));
   }, [dispatch])
 
   useEffect(() => {
@@ -103,6 +105,8 @@ const AddProduct: React.FC = () => {
       dispatch(fetchProductById(Number(id))).then((action) => {
         if (fetchProductById.fulfilled.match(action)) {
           const product = action.payload;
+          const isSale = product.salePrice !== null && product.salePrice < product.price;
+
           reset({
             name: product.name,
             description: product.description,
@@ -114,24 +118,36 @@ const AddProduct: React.FC = () => {
             brandId: product.brand.id,
             categoryId: product.category.id,
             status: product.status,
-            isSale: product.sale,
+            isSale: isSale,
+            discountPercentage: isSale
+              ? calculateDiscountPercentage(product.price, product.salePrice ?? 0)
+              : null,
           });
-           setImagePreviewUrls(product.productImages.map((image) => image.image));
+          setImagePreviewUrls(product.productImages.map((image) => image.image));
         }
       });
     }
   }, [id, dispatch, reset]);
+
+  useEffect(() => {
+    if (isSale && watchPrice && watchDiscountPercentage) {
+      const newSalePrice = calculateDiscountedPrice(watchPrice, watchDiscountPercentage);
+      setValue("salePrice", newSalePrice);
+    } else if (!isSale) {
+      setValue("salePrice", null);
+      setValue("discountPercentage", null);
+    }
+  }, [isSale, watchPrice, watchDiscountPercentage, setValue]);
 
   const onSubmit = async (data: FormInputs) => {
     setIsSubmitting(true);
     try {
       let listImage = imagePreviewUrls || [];
 
-
       if (selectedImages.length > 0) {
         const newImages = new FormData();
         selectedImages.forEach((image) => newImages.append("files", image));
-        listImage = await uploadImages(newImages); // Cập nhật ảnh nếu có ảnh mới
+        listImage = await uploadImages(newImages);
       }
 
       if (listImage.length === 0) {
@@ -143,11 +159,10 @@ const AddProduct: React.FC = () => {
       const newProduct: ProductRequest = {
         id: product?.id || null,
         ...data,
-        salePrice: data.salePrice || null,
+        salePrice: data.isSale ? data.salePrice : null,
         sale: data.isSale,
-        images: listImage, // Dùng ảnh cũ nếu không có ảnh mới
+        images: listImage,
       };
-      console.log(newProduct)
 
       if (product) {
         await dispatch(updateProduct({ ...newProduct, id: product.id })).unwrap();
@@ -263,8 +278,7 @@ const AddProduct: React.FC = () => {
                       <Switch
                         checked={value}
                         onChange={onChange}
-                        className={`${value ? "bg-blue-600" : "bg-gray-200"
-                          } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+                        className={`${value ? "bg-blue-600" : "bg-gray-200"} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
                       >
                         <span className="sr-only">Bật giảm giá</span>
                         <span
@@ -302,64 +316,62 @@ const AddProduct: React.FC = () => {
                 </div>
 
                 {isSale && (
-                  <div className="mt-2">
-                    <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">
-                      Giá khuyến mãi
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <span className="text-gray-500 sm:text-sm">₫</span>
+                  <>
+                    <div className="mt-2">
+                      <label htmlFor="discountPercentage" className="block text-sm font-medium text-gray-700">
+                        Phần trăm giảm giá
+                      </label>
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <input
+                          type="number"
+                          id="discountPercentage"
+                          {...register("discountPercentage", {
+                            required: isSale ? "Vui lòng nhập phần trăm giảm giá" : false,
+                            min: { value: 0, message: "Phần trăm không thể âm" },
+                            max: { value: 100, message: "Phần trăm không thể lớn hơn 100" },
+                          })}
+                          className={`block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.discountPercentage ? "border-red-300" : ""}`}
+                          placeholder="0"
+                        />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                          <span className="text-gray-500 sm:text-sm">%</span>
+                        </div>
                       </div>
-                      <input
-                        type="number"
-                        id="salePrice"
-                        {...register("salePrice", {
-                        
-                          min: { value: 0, message: "Giá không thể âm" },
-                          validate: (value) => {
-                            const price = watch("price")
-                            return !value || !price || value < price || "Giá khuyến mãi phải nhỏ hơn giá gốc"
-                          },
-                        })}
-                        className={`block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.salePrice ? "border-red-300" : ""
-                          }`}
-                        placeholder="0"
-                        value={discountedPrice || ""}
-
-                      />
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                        <span className="text-gray-500 sm:text-sm">VND</span>
-                      </div>
+                      {errors.discountPercentage && <p className="mt-1 text-sm text-red-600">{errors.discountPercentage.message}</p>}
                     </div>
-                    {errors.salePrice && <p className="mt-1 text-sm text-red-600">{errors.salePrice.message}</p>}
-                  </div>
-                )}
 
-                {isSale && (
-                  <div className="mt-2">
-                    <label htmlFor="discountPercentage" className="block text-sm font-medium text-gray-700">
-                      Phần trăm giảm giá
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <input
-                        type="number"
-                        id="discountPercentage"
-                        {...register("discountPercentage", {
-                          required: isSale ? "Vui lòng nhập phần trăm giảm giá" : false,
-                          min: { value: 0, message: "Phần trăm không thể âm" },
-                          max: { value: 100, message: "Phần trăm không thể lớn hơn 100" },
-                        })}
-                        className={`block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.discountPercentage ? "border-red-300" : ""
-                          }`}
-                        placeholder="0"
-                      />
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                        <span className="text-gray-500 sm:text-sm">%</span>
+                    <div className="mt-2">
+                      <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">
+                        Giá khuyến mãi
+                      </label>
+                      <div className="mt-1 relative rounded-md shadow-sm">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                          <span className="text-gray-500 sm:text-sm">₫</span>
+                        </div>
+                        <input
+                          type="number"
+                          id="salePrice"
+                          {...register("salePrice", {
+                            min: { value: 0, message: "Giá không thể âm" },
+                            validate: (value) => {
+                              const price = watch("price")
+                              return !value || !price || value < price || "Giá khuyến mãi phải nhỏ hơn giá gốc"
+                            },
+                          })}
+                          className={`block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.salePrice ? "border-red-300" : ""}`}
+                          placeholder="0"
+                          value={discountedPrice || ""}
+                          readOnly
+                        />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                          <span className="text-gray-500 sm:text-sm">VND</span>
+                        </div>
                       </div>
+                      {errors.salePrice && <p className="mt-1 text-sm text-red-600">{errors.salePrice.message}</p>}
                     </div>
-                    {errors.discountPercentage && <p className="mt-1 text-sm text-red-600">{errors.discountPercentage.message}</p>}
-                  </div>
+                  </>
                 )}
+              
               </div>
 
               <div className="sm:col-span-2">

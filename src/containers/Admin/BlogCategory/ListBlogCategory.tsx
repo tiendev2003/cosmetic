@@ -15,14 +15,14 @@ function classNames(...classes: string[]) {
 
 const ListBlogCategory = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { categories, loading, error, pagination } = useSelector((state: RootState) => state.blogCategories);
+  const { categories, error, pagination } = useSelector((state: RootState) => state.blogCategories);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [searchName, setSearchName] = useState<string>('');
   const [pageSize, setPageSize] = useState<number>(5);
 
   useEffect(() => {
-    dispatch(fetchBlogCategories({ page: 1, search: searchName }));
+    dispatch(fetchBlogCategories({ page: 1, search: searchName, size: pageSize }));
   }, [dispatch, pageSize]);
 
   const openDeleteModal = (id: number) => {
@@ -41,6 +41,7 @@ const ListBlogCategory = () => {
         await dispatch(deleteBlogCategory(selectedCategoryId)).unwrap();
         toast.success('Xóa danh mục blog thành công!');
         closeDeleteModal();
+        dispatch(fetchBlogCategories({ page: 1, search: searchName, size: pageSize })); // Cập nhật lại danh sách với pageSize hiện tại
       } catch (error) {
         console.error(error);
         toast.error('Xóa danh mục blog thất bại!');
@@ -49,24 +50,26 @@ const ListBlogCategory = () => {
   };
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchBlogCategories({ page, search: searchName }));
+    dispatch(fetchBlogCategories({ page, search: searchName, size: pageSize })); // Thêm size vào đây
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(e.target.value);
     setPageSize(newSize);
-    dispatch(fetchBlogCategories({ page: 1, search: searchName }));
+    dispatch(fetchBlogCategories({ page: 1, search: searchName, size: newSize })); // Gọi ngay với size mới
   };
 
   const debouncedSearch = debounce((value: string) => {
-    dispatch(fetchBlogCategories({ page: 1, search: value }));
+    dispatch(fetchBlogCategories({ page: 1, search: value, size: pageSize })); // Thêm size vào đây
   }, 300);
 
   const handleSearchName = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchName(value);
+
     debouncedSearch(value);
   };
+
 
   return (
     <div className="p-6">
@@ -149,7 +152,7 @@ const ListBlogCategory = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      
+
                       <NavLink
                         to={`/admin/blog-categories/edit/${category.id}`}
                         className="text-indigo-600 hover:text-indigo-900"

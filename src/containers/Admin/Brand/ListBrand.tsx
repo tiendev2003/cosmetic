@@ -15,7 +15,7 @@ function classNames(...classes: string[]) {
 
 const ListBrand = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { brands,  error, pagination } = useSelector((state: RootState) => state.brands);
+  const { brands, error, pagination } = useSelector((state: RootState) => state.brands);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
   const [searchName, setSearchName] = useState<string>('');
@@ -23,7 +23,7 @@ const ListBrand = () => {
 
   useEffect(() => {
     dispatch(fetchBrands({ page: 1, search: searchName, size: pageSize }));
-  }, [dispatch,  pageSize]);
+  }, [dispatch, pageSize]);
 
   const openDeleteModal = (id: number) => {
     setSelectedBrandId(id);
@@ -34,7 +34,6 @@ const ListBrand = () => {
     setSelectedBrandId(null);
     setIsDeleteModalOpen(false);
   };
-
   const handleDelete = async () => {
     if (selectedBrandId !== null) {
       try {
@@ -44,20 +43,20 @@ const ListBrand = () => {
       } catch (error) {
         console.error(error);
         toast.error('Xóa thương hiệu thất bại!');
-
       }
     }
   };
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchBrands({ page, search: searchName, size: pageSize }));
+    dispatch(fetchBrands({ page, search: searchName, size: pageSize })); // Thêm size vào đây
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(e.target.value);
     setPageSize(newSize);
-    dispatch(fetchBrands({ page: 1, search: searchName, size: newSize }));
+    dispatch(fetchBrands({ page: 1, search: searchName, size: newSize })); // Gọi ngay với size mới
   };
+
 
   const debouncedSearch = debounce((value: string) => {
     dispatch(fetchBrands({ page: 1, search: value, size: pageSize }));
@@ -68,7 +67,6 @@ const ListBrand = () => {
     setSearchName(value);
     debouncedSearch(value);
   };
-
   return (
     <div className="p-6">
       {/* Header */}
@@ -129,7 +127,7 @@ const ListBrand = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            { error ? (
+            {error ? (
               <tr>
                 <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
                   {error}
@@ -164,7 +162,7 @@ const ListBrand = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                     
+
                       <NavLink
                         to={`/admin/brand/edit/${brand.id}`}
                         className="text-indigo-600 hover:text-indigo-900"

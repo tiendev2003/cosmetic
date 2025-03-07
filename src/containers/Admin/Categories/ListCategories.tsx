@@ -15,7 +15,7 @@ function classNames(...classes: string[]) {
 
 const ListCategories = () => {
     const dispatch: AppDispatch = useDispatch();
-    const { categories, loading, error, pagination } = useSelector((state: RootState) => state.categories);
+    const { categories, error, pagination } = useSelector((state: RootState) => state.categories);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
     const [searchName, setSearchName] = useState<string>('');
@@ -41,6 +41,7 @@ const ListCategories = () => {
                 await dispatch(deleteCategory(selectedCategoryId)).unwrap();
                 toast.success('Xóa danh mục thành công!');
                 closeDeleteModal();
+                dispatch(fetchCategories({ page: 1, search: searchName, size: pageSize })); // Cập nhật lại danh sách với pageSize hiện tại
             } catch (error) {
                 console.error(error);
                 toast.error('Xóa danh mục thất bại!');
@@ -49,22 +50,23 @@ const ListCategories = () => {
     };
 
     const handlePageChange = (page: number) => {
-        dispatch(fetchCategories({ page, search: searchName }));
+        dispatch(fetchCategories({ page, search: searchName, size: pageSize })); // Thêm size vào đây
     };
 
     const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSize = parseInt(e.target.value);
         setPageSize(newSize);
-        dispatch(fetchCategories({ page: 1, search: searchName }));
+        dispatch(fetchCategories({ page: 1, search: searchName, size: newSize })); // Gọi ngay với size mới
     };
 
     const debouncedSearch = debounce((value: string) => {
-        dispatch(fetchCategories({ page: 1, search: value }));
+        dispatch(fetchCategories({ page: 1, search: value, size: pageSize })); // Thêm size vào đây
     }, 300);
 
     const handleSearchName = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchName(value);
+
         debouncedSearch(value);
     };
 

@@ -8,6 +8,19 @@ import {
   ProductRequest,
 } from "../../types/product.types";
 
+interface FilterParams {
+  page: number;
+  search: string;
+  size: number;
+  minPrice?: number;
+  maxPrice?: number;
+  categoryId?: number;
+  brandId?: number;
+  sortBy?: string;
+  sortDirection?: "asc" | "desc";
+}
+
+
 interface ProductState {
   products: Product[];
   searchProducts: Product[];
@@ -19,6 +32,7 @@ interface ProductState {
   error: string | null;
   pagination: Pagination | null;
   reviews: Review[];
+  filters: FilterParams;
 }
 
 const initialState: ProductState = {
@@ -32,6 +46,13 @@ const initialState: ProductState = {
   loading: false,
   error: null,
   pagination: null,
+  filters: {
+    page: 1,
+    search: "",
+    size: 9,
+    minPrice: 10000,
+    maxPrice: 1000000,
+  },
 };
 
 export const fetchProducts = createAsyncThunk(
@@ -233,7 +254,7 @@ export const fetchNewArrivalsProducts = createAsyncThunk(
 
 export const createReview = createAsyncThunk(
   "product/addReviewProduct",
-  async (review: any,{rejectWithValue}) => {
+  async (review: any, { rejectWithValue }) => {
     try {
       const response = await api.post("/api/reviews/add", review);
       console.log(response.data);
@@ -264,7 +285,11 @@ export const fetchReviewsByProductId = createAsyncThunk(
 const productSlice = createSlice({
   name: "product",
   initialState,
-  reducers: {},
+  reducers: {
+    setFilters: (state, action: PayloadAction<Partial<FilterParams>>) => {
+      state.filters = { ...state.filters, ...action.payload };
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -387,7 +412,7 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || "Failed to filter products";
       })
-     
+
       .addCase(
         searchProducts.fulfilled,
         (state, action: PayloadAction<Product[]>) => {
@@ -448,13 +473,13 @@ const productSlice = createSlice({
           action.error.message || "Failed to fetch new arrivals products";
       })
 
-      
-
       .addCase(fetchReviewsByProductId.fulfilled, (state, action) => {
         state.loading = false;
         state.reviews = action.payload;
       });
   },
 });
+
+export const { setFilters } = productSlice.actions;
 
 export default productSlice.reducer;

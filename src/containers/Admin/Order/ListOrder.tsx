@@ -18,7 +18,7 @@ function classNames(...classes: string[]) {
 
 const ListOrder = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { orders, loading, error, pagination } = useSelector((state: RootState) => state.orders);
+  const { orders,  error, pagination } = useSelector((state: RootState) => state.orders);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [searchOrderId, setSearchOrderId] = useState<string>('');

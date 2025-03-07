@@ -15,7 +15,7 @@ function classNames(...classes: string[]) {
 
 const ListBlog = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { blogs,   error, pagination } = useSelector((state: RootState) => state.blogs);
+  const { blogs, error, pagination } = useSelector((state: RootState) => state.blogs);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedBlogId, setSelectedBlogId] = useState<number | null>(null);
   const [searchTitle, setSearchTitle] = useState<string>('');
@@ -41,6 +41,7 @@ const ListBlog = () => {
         await dispatch(deleteBlog(selectedBlogId)).unwrap();
         toast.success('Deleted blog successfully!');
         closeDeleteModal();
+
       } catch (error) {
         console.error(error);
         toast.error('Failed to delete blog!');
@@ -49,31 +50,31 @@ const ListBlog = () => {
   };
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchBlogs({ page, search: searchTitle }));
+    dispatch(fetchBlogs({ page, search: searchTitle, size: pageSize })); // Thêm size vào đây
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(e.target.value);
     setPageSize(newSize);
-    dispatch(fetchBlogs({ page: 1, search: searchTitle }));
+    dispatch(fetchBlogs({ page: 1, search: searchTitle, size: newSize })); // Gọi ngay với size mới
   };
 
   const debouncedSearch = debounce((value: string) => {
-    dispatch(fetchBlogs({ page: 1, search: value }));
+    setSearchTitle(value);
+    dispatch(fetchBlogs({ page: 1, search: value, size: pageSize })); // Thêm size vào đây
   }, 300);
 
   const handleSearchTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTitle(value);
+    const value = e.target.value;    setSearchTitle(value);
     debouncedSearch(value);
   };
 
   if (error) {
     return <div className="p-6 text-red-500">{error}</div>;
   }
-  if (blogs.length === 0) {
-    return <div className="p-6 text-gray-500">No blogs found.</div>;
-  }
+ 
+
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -157,7 +158,7 @@ const ListBlog = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      
+
                       <NavLink
                         to={`/admin/blog/edit/${blog.id}`}
                         className="text-indigo-600 hover:text-indigo-900"

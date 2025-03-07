@@ -107,7 +107,7 @@ export const fetchOrders = createAsyncThunk(
     size: number;
   }) => {
     const response = await api.get(
-      `/api/orders?page=${page - 1}&search=${search}&size=${size}`
+      `/api/orders?page=${page - 1}&orderId=${search}&size=${size}`
     );
     console.log(response.data);
     if (response.data.status === "error") {

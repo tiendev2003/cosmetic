@@ -33,6 +33,7 @@ export const fetchDiscounts = createAsyncThunk(
     const response = await api.get(
       `/api/discounts?page=${page - 1}&search=${search}&size=${size}`
     );
+    console.log(response.data);
     if (response.data.status === "error") {
       throw new Error(response.data.message);
     }
