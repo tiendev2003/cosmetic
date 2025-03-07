@@ -261,8 +261,8 @@ const AddBlog = () => {
             onChange={handleInputChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="Nháp">Nháp</option>
-            <option value="Đã xuất bản">Đã xuất bản</option>
+            <option value="Không hoạt động">Không hoạt động</option>
+            <option value="Hoạt động">Hoạt động</option>
           </select>
         </div>
 

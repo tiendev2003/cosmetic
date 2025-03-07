@@ -27,7 +27,7 @@ export const fetchBlogs = createAsyncThunk(
   async ({
     page = 1,
     search = "",
-    size = 10,
+    size = 5,
   }: {
     page?: number;
     search?: string;

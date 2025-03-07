@@ -18,3 +18,11 @@ export interface BrandListResponse {
   data: Brand[];
   pagination: Pagination;
 }
+
+
+export interface BrandRequest {
+  name: string;
+  description: string;
+  image: File | string;
+  status: string;
+}

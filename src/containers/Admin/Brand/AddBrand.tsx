@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useNavigate, useParams } from 'react-router';
@@ -12,94 +13,58 @@ const AddBrand = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { brand } = useSelector((state: RootState) =>
-    state.brands
-  );
-  console.log('fetchBrandById',id);
+  const { brand, loading, error } = useSelector((state: RootState) => state.brands);
 
-
-  // State cho form
-  const [formData, setFormData] = useState<{
-    name: string;
-    description: string;
-    image: File | string | null;
-    status: string;
-  }>({
-    name: '',
-    description: '',
-    image: null,
-    status: 'Active',
+  const { control, handleSubmit, setValue, formState: { errors } } = useForm({
+    defaultValues: {
+      name: '',
+      description: '',
+      status: 'Active',
+    },
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // Load brand cần chỉnh sửa nếu có
-  useEffect(() => {
-    if (brand) {
-      setFormData({
-        name: brand.name,
-        description: brand.description,
-        image: brand.image ,
-        status: brand.status,
-      });
-      setImagePreview(brand.image);
-    }
-  }, [ ]);
 
   useEffect(() => {
     if (id) {
       dispatch(fetchBrandById(id)).then((action) => {
         if (fetchBrandById.fulfilled.match(action)) {
           const brand = action.payload;
-          setFormData({
-            name: brand.name,
-            description: brand.description,
-            image: brand.image,
-            status: brand.status,
-          });
+          setValue('name', brand.name);
+          setValue('description', brand.description);
+          setValue('status', brand.status);
           setImagePreview(brand.image);
         }
       });
     }
-  }, [id, dispatch]);
+  }, [id, dispatch, setValue]);
 
-  // Xử lý thay đổi input
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Xử lý upload ảnh
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, image: file }));
+      setImageFile(file);
       setImagePreview(imageUrl);
     }
   };
 
-  // Xử lý submit form
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: { name: string; description: string; status: string }) => {
     try {
       let imageUrl = imagePreview;
-      if (formData.image) {
+      if (imageFile != null) {
         const formDataImage = new FormData();
-        formDataImage.append('file', formData.image as File);
+        formDataImage.append('file', imageFile);
         const image = await uploadImage(formDataImage);
         imageUrl = api.getUri() + "/api" + image;
       }
 
       const newBrand: Brand = {
         id: brand ? brand.id : Date.now(),
-        name: formData.name,
-        description: formData.description,
-        image: imageUrl!,
-        status: formData.status,
+        name: data.name,
+        description: data.description,
+        image: imageUrl ?? brand?.image ?? '',
+        status: data.status,
         createdDate: brand ? brand.createdDate : new Date().toISOString(),
         updatedDate: new Date().toISOString(),
       };
@@ -121,7 +86,6 @@ const AddBrand = () => {
 
   return (
     <div className="p-6 mx-auto">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
           {brand ? 'Chỉnh sửa thương hiệu' : 'Thêm thương hiệu mới'}
@@ -133,23 +97,27 @@ const AddBrand = () => {
           <span className="mr-2">Quay lại danh sách thương hiệu</span>
         </NavLink>
       </div>
-    
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         {/* Name */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
             Tên
           </label>
-          <input
-            type="text"
-            id="name"
+          <Controller
             name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            control={control}
+            rules={{ required: 'Tên không được để trống' }}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="text"
+                id="name"
+                className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.name ? 'border-red-500' : ''}`}
+              />
+            )}
           />
+          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
         </div>
 
         {/* Description */}
@@ -157,17 +125,23 @@ const AddBrand = () => {
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">
             Mô tả
           </label>
-          <textarea
-            id="description"
+          <Controller
             name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows={4}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            control={control}
+            rules={{ required: 'Mô tả không được để trống' }}
+            render={({ field }) => (
+              <textarea
+                {...field}
+                id="description"
+                rows={4}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            )}
           />
+          {errors.description && <p className="text-red-500">{errors.description.message}</p>}
         </div>
 
-        {/* Image */}
+        {/* Image Upload */}
         <div>
           <label htmlFor="image" className="block text-sm font-medium text-gray-700">
             Hình ảnh
@@ -192,16 +166,20 @@ const AddBrand = () => {
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">
             Trạng thái
           </label>
-          <select
-            id="status"
+          <Controller
             name="status"
-            value={formData.status}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          >
-            <option value="Active">Hoạt động</option>
-            <option value="Inactive">Không hoạt động</option>
-          </select>
+            control={control}
+            render={({ field }) => (
+              <select
+                {...field}
+                id="status"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              >
+                <option value="Active">Hoạt động</option>
+                <option value="Inactive">Không hoạt động</option>
+              </select>
+            )}
+          />
         </div>
 
         {/* Buttons */}

@@ -17,7 +17,7 @@ export interface ProductQuickViewProps {
 }
 
 const ProductQuickView: FC<ProductQuickViewProps> = ({ className = "", product }) => {
-  const LIST_IMAGES_DEMO = product.productImages.map(img => img.image); // Giả định ProductImage có trường url
+  const LIST_IMAGES_DEMO = product?.productImages?.map(img => img.image); // Giả định ProductImage có trường url
   const dispatch: AppDispatch = useDispatch();
 
   const [qualitySelected, setQualitySelected] = React.useState(1);

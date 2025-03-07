@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useNavigate, useParams } from 'react-router';
@@ -10,71 +11,56 @@ const AddDiscount = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { discount,   } = useSelector((state: RootState) => state.discounts);
+  const { discount } = useSelector((state: RootState) => state.discounts);
 
-  // State cho form
-  const [formData, setFormData] = useState({
-    name: '',
-    discountCode: '',
-    discountType: DiscountType.PERCENTAGE,
-    discountValue: 0,
-    minOrderValue: 0,
-    maxDiscountAmount: 0,
-    maxUsage: 0,
-    startDate: '',
-    endDate: '',
-    isActive: true,
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
+    defaultValues: {
+      name: '',
+      discountCode: '',
+      discountType: DiscountType.PERCENTAGE,
+      discountValue: 0,
+      minOrderValue: 0,
+      maxDiscountAmount: 0,
+      maxUsage: 0,
+      startDate: '',
+      endDate: '',
+      isActive: true,
+    }
   });
+
 
   useEffect(() => {
     if (id) {
       dispatch(fetchDiscountById(Number(id))).then((action) => {
         if (fetchDiscountById.fulfilled.match(action)) {
           const discount = action.payload;
-          setFormData({
-            name: discount.name,
-            discountCode: discount.discountCode,
-            discountType: discount.discountType,
-            discountValue: discount.discountValue,
-            minOrderValue: discount.minOrderValue,
-            maxDiscountAmount: discount.maxDiscountAmount,
-            maxUsage: discount.maxUsage,
-            startDate:  discount.startDate.toLocaleString().split('T')[0],
-            endDate: discount.endDate. toLocaleString().split('T')[0],
-            isActive: discount.isActive,
-          });
+          setValue('name', discount.name);
+          setValue('discountCode', discount.discountCode);
+          setValue('discountType', discount.discountType);
+          setValue('discountValue', discount.discountValue);
+          setValue('minOrderValue', discount.minOrderValue);
+          setValue('maxDiscountAmount', discount.maxDiscountAmount);
+          setValue('maxUsage', discount.maxUsage);
+          setValue('startDate', new Date(discount.startDate).toISOString().split('T')[0]);
+          setValue('endDate', new Date(discount.endDate).toISOString().split('T')[0]);
+          setValue('isActive', discount.isActive);
         }
       });
     }
-  }, [id, dispatch]);
+  }, [id, dispatch, setValue]);
+  const startDate = watch('startDate');
+  const endDate = watch('endDate');
+  const maxDiscountAmount = watch('maxDiscountAmount');
+  const discountType = watch('discountType');
 
-  // Xử lý thay đổi input
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Xử lý submit form
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
-    // Tạo object Discount theo model
+  const onSubmit = async (data: any) => {
     const newDiscount: Discount = {
-      id: discount ? discount.id : Date.now(), // Tạm dùng timestamp làm ID, thay bằng ID từ backend trong thực tế
-      name: formData.name,
-      discountCode: formData.discountCode,
-      discountType: formData.discountType,
-      discountValue: formData.discountValue,
-      minOrderValue: formData.minOrderValue,
-      maxDiscountAmount: formData.maxDiscountAmount,
-      maxUsage: formData.maxUsage,
+      id: discount ? discount.id : Date.now(),
+      ...data,
       usageCount: discount ? discount.usageCount : 0,
-      applicableProductId: discount ? discount.applicableProductId : 0, // Cần cập nhật theo yêu cầu thực tế
-      startDate: new Date(formData.startDate),
-      endDate: new Date(formData.endDate),
-      isActive: formData.isActive,
+      applicableProductId: discount ? discount.applicableProductId : 0,
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
     };
 
     try {
@@ -93,180 +79,164 @@ const AddDiscount = () => {
   };
 
   return (
-    <div className="p-6   mx-auto">
+    <div className="p-6 mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Thêm giảm giá mới</h1>
-        <NavLink
-          to="/admin/discount"
-          className="text-indigo-600 hover:text-indigo-900 flex items-center"
-        >
+        <h1 className="text-2xl font-bold text-gray-900">{
+          discount ? `Sửa mã - ${discount.name}` : 'Thêm mã giảm giá'
+        }</h1>
+        <NavLink to="/admin/discount" className="text-indigo-600 hover:text-indigo-900 flex items-center">
           <span className="mr-2">Back to Discount List</span>
         </NavLink>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Tên
-            </label>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Tên</label>
             <input
               type="text"
               id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {...register('name', { required: 'Tên là bắt buộc' })}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.name ? 'border-red-500' : ''}`}
             />
+            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
           </div>
 
           {/* Discount Code */}
           <div>
-            <label htmlFor="discountCode" className="block text-sm font-medium text-gray-700">
-              Mã giảm giá
-            </label>
+            <label htmlFor="discountCode" className="block text-sm font-medium text-gray-700">Mã giảm giá</label>
             <input
               type="text"
               id="discountCode"
-              name="discountCode"
-              value={formData.discountCode}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {...register('discountCode', { required: 'Mã giảm giá là bắt buộc' })}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.discountCode ? 'border-red-500' : ''}`}
             />
+            {errors.discountCode && <p className="text-red-500 text-sm">{errors.discountCode.message}</p>}
           </div>
 
           {/* Discount Type */}
           <div>
-            <label htmlFor="discountType" className="block text-sm font-medium text-gray-700">
-              Loại giảm giá
-            </label>
+            <label htmlFor="discountType" className="block text-sm font-medium text-gray-700">Loại giảm giá</label>
             <select
               id="discountType"
-              name="discountType"
-              value={formData.discountType}
-              onChange={handleInputChange}
+              {...register('discountType')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option value={DiscountType.PERCENTAGE}>Phần trăm</option>
-              <option value={DiscountType.FIXED_AMOUNT}>Số tiền cố định</option>
+              <option value={DiscountType.FIXED}>Số tiền cố định</option>
             </select>
           </div>
 
+
           {/* Discount Value */}
           <div>
-            <label htmlFor="discountValue" className="block text-sm font-medium text-gray-700">
-              Giá trị giảm giá
-            </label>
+            <label htmlFor="discountValue" className="block text-sm font-medium text-gray-700">Giá trị giảm giá</label>
             <input
               type="number"
               id="discountValue"
-              name="discountValue"
-              value={formData.discountValue}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {...register('discountValue', {
+                required: 'Giá trị giảm giá là bắt buộc',
+                min: { value: 1, message: 'Giá trị giảm giá phải lớn hơn 0' },
+                validate: value => {
+                  if( discountType === DiscountType.PERCENTAGE) {
+                    return value <= 100 || 'Giá trị giảm giá phần trăm không được vượt quá 100%';
+                  }
+                  const max = maxDiscountAmount ? maxDiscountAmount : Infinity;
+                  return value <= max || 'Giá trị giảm giá không được vượt quá số tiền giảm giá tối đa';
+                }
+              })}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.discountValue ? 'border-red-500' : ''}`}
             />
+            {errors.discountValue && <p className="text-red-500 text-sm">{errors.discountValue.message}</p>}
           </div>
 
           {/* Min Order Value */}
           <div>
-            <label htmlFor="minOrderValue" className="block text-sm font-medium text-gray-700">
-              Giá trị đơn hàng tối thiểu
-            </label>
+            <label htmlFor="minOrderValue" className="block text-sm font-medium text-gray-700">Giá trị đơn hàng tối thiểu</label>
             <input
               type="number"
               id="minOrderValue"
-              name="minOrderValue"
-              value={formData.minOrderValue}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {...register('minOrderValue', { required: 'Giá trị đơn hàng tối thiểu là bắt buộc' })}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.minOrderValue ? 'border-red-500' : ''}`}
             />
+            {errors.minOrderValue && <p className="text-red-500 text-sm">{errors.minOrderValue.message}</p>}
           </div>
 
           {/* Max Discount Amount */}
           <div>
-            <label htmlFor="maxDiscountAmount" className="block text-sm font-medium text-gray-700">
-              Số tiền giảm giá tối đa
-            </label>
+            <label htmlFor="maxDiscountAmount" className="block text-sm font-medium text-gray-700">Số tiền giảm giá tối đa</label>
             <input
               type="number"
               id="maxDiscountAmount"
-              name="maxDiscountAmount"
-              value={formData.maxDiscountAmount}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {...register('maxDiscountAmount', { required: 'Số tiền giảm giá tối đa là bắt buộc' })}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.maxDiscountAmount ? 'border-red-500' : ''}`}
             />
+            {errors.maxDiscountAmount && <p className="text-red-500 text-sm">{errors.maxDiscountAmount.message}</p>}
           </div>
 
           {/* Max Usage */}
           <div>
-            <label htmlFor="maxUsage" className="block text-sm font-medium text-gray-700">
-              Số lần sử dụng tối đa
-            </label>
+            <label htmlFor="maxUsage" className="block text-sm font-medium text-gray-700">Số lần sử dụng tối đa</label>
             <input
               type="number"
               id="maxUsage"
-              name="maxUsage"
-              value={formData.maxUsage}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {...register('maxUsage', { required: 'Số lần sử dụng tối đa là bắt buộc' })}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.maxUsage ? 'border-red-500' : ''}`}
             />
+            {errors.maxUsage && <p className="text-red-500 text-sm">{errors.maxUsage.message}</p>}
           </div>
 
           {/* Start Date */}
           <div>
-            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
-              Ngày bắt đầu
-            </label>
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">Ngày bắt đầu</label>
             <input
               type="date"
               id="startDate"
-              name="startDate"
-              value={formData.startDate}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {...register('startDate', {
+                required: 'Ngày bắt đầu là bắt buộc',
+                validate: value => {
+                  const start = new Date(value);
+                  const end = new Date(endDate);
+                  return start < end || 'Ngày bắt đầu phải trước ngày kết thúc';
+                }
+              })}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.startDate ? 'border-red-500' : ''}`}
             />
+            {errors.startDate && <p className="text-red-500 text-sm">{errors.startDate.message}</p>}
           </div>
-
           {/* End Date */}
           <div>
-            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
-              Ngày kết thúc
-            </label>
+            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">Ngày kết thúc</label>
             <input
               type="date"
               id="endDate"
-              name="endDate"
-              value={formData.endDate}
-              onChange={handleInputChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              {...register('endDate', {
+                required: 'Ngày kết thúc là bắt buộc',
+                validate: value => {
+                  const start = new Date(startDate);
+                  const end = new Date(value);
+                  return end > start || 'Ngày kết thúc phải sau ngày bắt đầu';
+                }
+              })}
+              className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.endDate ? 'border-red-500' : ''}`}
             />
+            {errors.endDate && <p className="text-red-500 text-sm">{errors.endDate.message}</p>}
           </div>
+
 
           {/* Is Active */}
           <div>
-            <label htmlFor="isActive" className="block text-sm font-medium text-gray-700">
-              Trạng thái
-            </label>
+            <label htmlFor="isActive" className="block text-sm font-medium text-gray-700">Trạng thái</label>
             <select
               id="isActive"
-              name="isActive"
-              value={formData.isActive ? 'true' : 'false'}
-              onChange={handleInputChange}
+              {...register('isActive')}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
-              <option value="true">Hoạt động</option>
-              <option value="false">Không hoạt động</option>
+              <option value={"true"}>Hoạt động</option>
+              <option value={"false"}>Không hoạt động</option>
             </select>
           </div>
         </div>

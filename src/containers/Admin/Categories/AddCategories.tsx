@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useNavigate, useParams } from 'react-router';
@@ -8,37 +9,27 @@ import { AppDispatch, RootState } from '../../../store';
 import { Category } from '../../../types';
 import { uploadImage } from '../../../utils/uploadImage';
 
- 
 const AddCategories = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { category,   } = useSelector((state: RootState) => state.categories);
+  const { category } = useSelector((state: RootState) => state.categories);
 
-  // State cho form
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    image: null as File | string | null,
-    status: 'Active',
-  });
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // Xử lý thay đổi input
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
 
   // Xử lý upload ảnh
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, image: file }));
+      setValue('image', file); // Use setValue to update the image file
       setImagePreview(imageUrl);
     }
   };
@@ -48,41 +39,37 @@ const AddCategories = () => {
       dispatch(fetchCategoryById(Number(id))).then((action) => {
         if (fetchCategoryById.fulfilled.match(action)) {
           const category = action.payload;
-           setFormData({
-            name: category.name,
-            description: category.description,
-            image: category.image,
-            status: category.status,
-          });
+          setValue('name', category.name);
+          setValue('description', category.description);
+          setValue('image', category.image);
+          setValue('status', category.status);
           setImagePreview(category.image);
         }
       });
     }
-  }, [id, dispatch]);
+  }, [id, dispatch, setValue]);
 
   // Xử lý submit form
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: any) => {
     try {
       let imageUrl = imagePreview;
-      if (formData.image && typeof formData.image !== 'string') {
+      if (data.image && typeof data.image !== 'string') {
         const formDataImage = new FormData();
-        formDataImage.append('file', formData.image);
+        formDataImage.append('file', data.image);
         const image = await uploadImage(formDataImage);
         imageUrl = api.getUri() + "/api" + image;
       }
 
       const newCategory: Category = {
         id: category ? category.id : Date.now(),
-        name: formData.name,
-        description: formData.description,
+        name: data.name,
+        description: data.description,
         image: imageUrl!,
-        status: formData.status,
+        status: data.status,
         createdDate: category ? category.createdDate : new Date().toISOString(),
         updatedDate: new Date().toISOString(),
       };
-      console.log('newCategory:', category);
+
       if (category?.id) {
         await dispatch(updateCategory(newCategory)).unwrap();
         toast.success('Cập nhật danh mục thành công');
@@ -98,48 +85,35 @@ const AddCategories = () => {
   };
 
   return (
-    <div className="p-6  mx-auto">
+    <div className="p-6 mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{
-          category ? `Chỉnh danh mục: ${category.name}` : 'Thêm danh mục'
-        }</h1>
-        <NavLink
-          to="/admin/categories"
-          className="text-indigo-600 hover:text-indigo-900 flex items-center"
-        >
+        <h1 className="text-2xl font-bold text-gray-900">{category ? `Chỉnh danh mục: ${category.name}` : 'Thêm danh mục'}</h1>
+        <NavLink to="/admin/categories" className="text-indigo-600 hover:text-indigo-900 flex items-center">
           <span className="mr-2">Back to Category List</span>
         </NavLink>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         {/* Name */}
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-            Tên
-          </label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Tên</label>
           <input
             type="text"
             id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            {...register('name', { required: 'Tên là bắt buộc' })}
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.name ? 'border-red-500' : ''}`}
           />
+          {errors.name && typeof errors.name.message === 'string' && <p className="text-red-500 text-sm">{errors.name.message}</p>}
         </div>
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Mô tả
-          </label>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Mô tả</label>
           <textarea
             id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
+            {...register('description')}
             rows={4}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
@@ -147,13 +121,10 @@ const AddCategories = () => {
 
         {/* Image */}
         <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-            Ảnh
-          </label>
+          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Ảnh</label>
           <input
             type="file"
             id="image"
-            name="image"
             accept="image/*"
             onChange={handleImageUpload}
             className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
@@ -167,14 +138,10 @@ const AddCategories = () => {
 
         {/* Status */}
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-            Trạng thái
-          </label>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">Trạng thái</label>
           <select
             id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleInputChange}
+            {...register('status')}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
             <option value="Active">Hoạt động</option>
@@ -200,6 +167,6 @@ const AddCategories = () => {
       </form>
     </div>
   );
-}
+};
 
 export default AddCategories;

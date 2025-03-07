@@ -4,7 +4,8 @@ import { useDispatch } from "react-redux";
 import api from "../api/api";
 import { clearCartNew } from "../features/cart/cartSlice";
 import { AppDispatch } from "../store";
-import { AuthResponse, LoginCredentials, PasswordData, User, UserResponse, } from "../types";
+import { AuthResponse, LoginCredentials, PasswordData, User, UserResponse } from "../types";
+import { uploadImage } from "../utils/uploadImage";
 
 export interface AuthContextType {
   isAuthenticated: boolean;
@@ -15,6 +16,7 @@ export interface AuthContextType {
   userInformation: User | null;
   updateUserInformation: (updatedInfo: Partial<User>) => Promise<void>;
   changePassword: (passwordData: PasswordData) => Promise<any>;
+  changeAvatar: (formData: FormData) => Promise<any>;
 }
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -43,7 +45,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         })
         .catch((error) => {
           console.error("Get user info failed", error);
-          toast.error("Get user info failed");
         })
         .finally(() => {
           setLoading(false);
@@ -77,7 +78,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     } catch (error: any) {
       console.error("Login failed", error);
-      toast.error(error.response?.data?.error || "Login failed");
+      toast.error(error.response?.data?.message || "Login failed");
 
     } finally {
       setLoading(false);
@@ -96,7 +97,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const updateUserInformation = async (updatedInfo: Partial<User>): Promise<void> => {
     try {
-      const response = await api.put<User>(
+      const response = await api.put<UserResponse>(
         "/api/user/update",
         updatedInfo,
         {
@@ -106,9 +107,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           },
         }
       );
-      setUserInformation(response.data);
+      console.log(response.data);
+      setUserInformation(
+        (prevUserInformation) => ({
+          ...prevUserInformation!,
+          username: response.data.data.username,
+          phone: response.data.data.phone,
+          bio: response.data.data.bio,
+        })
+      );
     } catch (error: any) {
       console.error("Update failed", error);
+      throw error;
+    }
+  };
+
+  // change avatar 
+  const changeAvatar = async (formData: FormData): Promise<any> => {
+    try {
+      const urlavatar = await uploadImage(formData);
+      console.log(api.getUri() + "/api/" + urlavatar);
+      await api.put<User>(`/api/user/avatar`, {
+        avatar: api.getUri() + "/api" + urlavatar,
+      });
+
+      setUserInformation((prevUserInformation) => ({
+        ...prevUserInformation!,
+        avatar: api.getUri() + "/api" + urlavatar,
+      }));
+    } catch (error: any) {
+      console.error("Change avatar failed", error);
       throw error;
     }
   };
@@ -145,6 +173,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         userInformation,
         updateUserInformation,
         changePassword,
+        changeAvatar,
       }}
     >
       {children}

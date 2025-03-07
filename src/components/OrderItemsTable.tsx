@@ -32,10 +32,10 @@ const OrderItemsTable: React.FC<OrderItemsTableProps> = ({ items, formatCurrency
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 h-16 w-16">
-                    {item.product.productImages && item.product.productImages.length > 0 ? (
+                    {item?.product?.productImages && item?.product?.productImages?.length > 0 ? (
                       <img
                         className="h-16 w-16 object-cover rounded-md"
-                        src={item.product.productImages[0].image || "/placeholder.svg?height=64&width=64"}
+                        src={item.product?.productImages[0]?.image || "/placeholder.svg?height=64&width=64"}
                         alt={item.product.name}
                       />
                     ) : (

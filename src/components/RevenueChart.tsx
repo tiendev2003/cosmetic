@@ -1,9 +1,10 @@
 "use client"
 
 import { useMemo } from "react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { RevenueReport } from "../types/report.types"
- 
+import formatCurrencyVND from "../utils/formatMoney"
+
 interface RevenueChartProps {
   data: RevenueReport[]
 }
@@ -22,13 +23,6 @@ const RevenueChart = ({ data }: RevenueChartProps) => {
       .sort((a, b) => a.month - b.month)
   }, [data])
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
 
   return (
     <div className="h-80">
@@ -44,8 +38,18 @@ const RevenueChart = ({ data }: RevenueChartProps) => {
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
-          <YAxis tickFormatter={(value) => `$${value / 1000}k`} />
-          <Tooltip formatter={(value) => formatCurrency(value as number)} />
+          <YAxis tickFormatter={(value) =>
+            // nếu số tiền lớn thì chuyển sang dạng K, M, B
+            value > 999999999
+              ? `${(value / 1000000000).toFixed(1)}B`
+              : value > 999999
+                ? `${(value / 1000000).toFixed(1)}M`
+                : value > 999
+                  ? `${(value / 1000).toFixed(1)}K`
+                  : value
+
+          } />
+          <Tooltip formatter={(value) => formatCurrencyVND(value as number)} />
           <Legend />
           <Line
             type="monotone"

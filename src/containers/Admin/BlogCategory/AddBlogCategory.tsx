@@ -1,5 +1,6 @@
-import { FormEvent, useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink, useNavigate, useParams } from 'react-router';
 import { addBlogCategory, fetchBlogCategoryById, updateBlogCategory } from '../../../features/blogCategory/blogCategorySlice';
@@ -10,45 +11,33 @@ const AddBlogCategory = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { category,   } = useSelector((state: RootState) => state.blogCategories);
+  const { category } = useSelector((state: RootState) => state.blogCategories);
 
-  // State cho form
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-  });
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<{ name: string; description: string }>();
 
   useEffect(() => {
     if (id) {
       dispatch(fetchBlogCategoryById(Number(id))).then((action) => {
         if (fetchBlogCategoryById.fulfilled.match(action)) {
           const category = action.payload;
-          setFormData({
-            name: category.name,
-            description: category.description,
-          });
+          setValue('name', category.name);
+          setValue('description', category.description);
         }
       });
     }
-  }, [id, dispatch]);
+  }, [id, dispatch, setValue]);
 
-  // Xử lý thay đổi input
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Xử lý submit form
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: { name: string; description: string }) => {
     try {
       const newBlogCategory: BlogCategory = {
         id: category ? category.id : Date.now(),
-        name: formData.name,
-        description: formData.description,
+        name: data.name,
+        description: data.description,
         createdDate: category ? category.createdDate : new Date().toISOString(),
         updatedDate: new Date().toISOString(),
       };
@@ -68,22 +57,19 @@ const AddBlogCategory = () => {
   };
 
   return (
-    <div className="p-6  mx-auto">
+    <div className="p-6 mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{
-          category ? `Chỉnh danh mục blog: ${category.name}` : 'Thêm danh mục blog'
-        }</h1>
-        <NavLink
-          to="/admin/blog-categories"
-          className="text-indigo-600 hover:text-indigo-900 flex items-center"
-        >
-          <span className="mr-2">Quay lại danh sách Danh mục Blog</span>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {category ? `Chỉnh danh mục blog: ${category.name}` : 'Thêm danh mục blog'}
+        </h1>
+        <NavLink to="/admin/blog-categories" className="text-indigo-600 hover:text-indigo-900">
+          Quay lại danh sách Danh mục Blog
         </NavLink>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
         {/* Name */}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -92,12 +78,10 @@ const AddBlogCategory = () => {
           <input
             type="text"
             id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            required
+            {...register('name', { required: 'Tên không được để trống' })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
         </div>
 
         {/* Description */}
@@ -107,12 +91,11 @@ const AddBlogCategory = () => {
           </label>
           <textarea
             id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
+            {...register('description', { required: 'Mô tả không được để trống' })}
             rows={4}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
+          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
         </div>
 
         {/* Buttons */}
@@ -133,6 +116,6 @@ const AddBlogCategory = () => {
       </form>
     </div>
   );
-}
+};
 
 export default AddBlogCategory;

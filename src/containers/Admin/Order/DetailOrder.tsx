@@ -332,27 +332,32 @@ const DetailOrder = () => {
                 <h2 className="text-lg font-medium text-gray-900">Thông tin khách hàng</h2>
               </div>
               <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
-                <div className="flex items-center mb-4">
+                <div className="flex items-center gap-x-4 mb-4">
                   <img
-                    src={order.user.avatar || "/placeholder.svg?height=40&width=40"}
-                    alt={order.user.username}
-                    className="h-10 w-10 rounded-full mr-4"
+                    src={order.user?.avatar || "/placeholder.svg?height=40&width=40"}
+                    alt={order.user?.username || "User Avatar"}
+                    className="h-10 w-10 rounded-full object-cover"
                   />
                   <div>
-                    <h4 className="text-md font-medium">{order.user.username}</h4>
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                      <EnvelopeIcon className="h-4 w-4 mr-1" />
-                      {order.user.email}
-                    </div>
-                    {order.user.phone && (
+                    <h4 className="text-md font-medium">{order.user?.username || "Unknown User"}</h4>
+
+                    {order.user?.email && (
                       <div className="flex items-center text-sm text-gray-500 mt-1">
-                        <PhoneIcon className="h-4 w-4 mr-1" />
+                        <EnvelopeIcon className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <span className="break-all">{order.user.email}</span>
+                      </div>
+                    )}
+
+                    {order.user?.phone && (
+                      <div className="flex items-center text-sm text-gray-500 mt-1">
+                        <PhoneIcon className="h-4 w-4 mr-1 flex-shrink-0" />
                         {order.user.phone}
                       </div>
                     )}
                   </div>
                 </div>
               </div>
+
             </div>
 
             {/* Shipping Address */}

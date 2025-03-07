@@ -8,8 +8,7 @@ import SwitchDarkMode2 from "../../shared/SwitchDarkMode/SwitchDarkMode2";
 
 export default function AvatarDropdown() {
   const { logout, userInformation } = useContext<AuthContextType>(AuthContext as any);
-
-  const handleLogout = () => {
+   const handleLogout = () => {
     logout();
   }
 

@@ -1,15 +1,11 @@
 import { FC, useContext } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
 import Label from "../../components/Label/Label";
-import { avatarImgs } from "../../contains/fakeData";
 import { AuthContext, AuthContextType } from "../../context/AuthContext";
-import { changeAvatar } from "../../features/auth/authSlice";
 import ButtonPrimary from "../../shared/Button/ButtonPrimary";
 import Input from "../../shared/Input/Input";
 import Textarea from "../../shared/Textarea/Textarea";
-import { AppDispatch } from "../../store";
 import CommonLayout from "./CommonLayout";
 
 export interface AccountPageProps {
@@ -24,8 +20,7 @@ interface FormValues {
 }
 
 const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
-  const { updateUserInformation,userInformation} = useContext<AuthContextType>(AuthContext as any);
-  const dispatch: AppDispatch = useDispatch();
+  const { updateUserInformation, userInformation, changeAvatar } = useContext<AuthContextType>(AuthContext as any);
 
   // Khai báo useForm với defaultValues từ userInfo
   const {
@@ -47,7 +42,7 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
       const formData = new FormData();
       formData.append("file", file);
       try {
-        await dispatch(changeAvatar(formData)).unwrap();
+        await changeAvatar(formData);
         toast.success("Change avatar successfully");
       } catch (error) {
         toast.error("Change avatar failed");
@@ -56,10 +51,9 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
   };
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    console.log("Form data submitted:", data);
     try {
       // Thêm logic xử lý submit ở đây (ví dụ: gọi API để cập nhật thông tin)
-      await  updateUserInformation(data);
+      await updateUserInformation(data);
       toast.success("Account updated successfully");
     } catch (error) {
       toast.error("An error occurred");
@@ -79,11 +73,18 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
               <div className="flex-shrink-0 flex items-start">
                 {/* AVATAR */}
                 <div className="relative rounded-full overflow-hidden flex">
-                  <img
-                    src={userInformation?.avatar || avatarImgs[0]}
-                    alt=""
-                    className="w-32 h-32 rounded-full object-cover z-0"
-                  />
+                  {
+                    userInformation?.avatar === null ? (
+                      <div className="w-32 h-32 bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-neutral-400 dark:text-neutral-500 text-2xl rounded-full">
+                        <i className="las la-user-circle"></i>
+                      </div>
+                    ) : <img
+                      src={userInformation?.avatar}
+                      alt=""
+                      className="w-32 h-32 rounded-full object-cover z-0"
+                    />
+                  }
+
                   <div className="absolute inset-0 bg-black bg-opacity-20 flex flex-col items-center justify-center text-neutral-50 cursor-pointer">
                     <svg
                       width="30"
@@ -137,6 +138,7 @@ const AccountPage: FC<AccountPageProps> = ({ className = "" }) => {
                           message: "Invalid email address",
                         },
                       })}
+                      disabled={true}
                     />
                   </div>
                   {errors.email && (

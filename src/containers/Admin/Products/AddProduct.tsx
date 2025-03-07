@@ -1,9 +1,10 @@
 "use client"
 
+import { Switch } from "@headlessui/react"
 import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline"
 import type React from "react"
 import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
 import { NavLink, useNavigate, useParams } from "react-router"
@@ -45,7 +46,8 @@ const AddProduct: React.FC = () => {
   const {
     register,
     handleSubmit,
-     formState: { errors },
+    control,
+    formState: { errors },
     watch,
     reset,
   } = useForm<FormInputs>({
@@ -114,7 +116,7 @@ const AddProduct: React.FC = () => {
             status: product.status,
             isSale: product.sale,
           });
-          setImagePreviewUrls(product.productImages.map((image) => image.image));
+           setImagePreviewUrls(product.productImages.map((image) => image.image));
         }
       });
     }
@@ -141,7 +143,7 @@ const AddProduct: React.FC = () => {
       const newProduct: ProductRequest = {
         id: product?.id || null,
         ...data,
-        salePrice: data.discountPercentage ? data.price - (data.price * data.discountPercentage) / 100 : null,
+        salePrice: data.salePrice || null,
         sale: data.isSale,
         images: listImage, // Dùng ảnh cũ nếu không có ảnh mới
       };
@@ -237,15 +239,6 @@ const AddProduct: React.FC = () => {
                     {...register("price", {
                       required: "Vui lòng nhập giá bán",
                       min: { value: 0, message: "Giá không thể âm" },
-                      validate: {
-                        validWithSale: (value) => {
-                          const discount = watch("discountPercentage");
-                          if (isSale && discount && value <= (value * discount) / 100) {
-                            return "Giá gốc phải lớn hơn giá khuyến mãi";
-                          }
-                          return true;
-                        }
-                      }
                     })}
                     className={`block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.price ? "border-red-300" : ""
                       }`}
@@ -259,63 +252,112 @@ const AddProduct: React.FC = () => {
               </div>
 
               <div>
-                {isSale && (
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="discountPercentage" className="block text-sm font-medium text-gray-700">
-                        Phần trăm giảm giá
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <input
-                          type="number"
-                          id="discountPercentage"
-                          {...register("discountPercentage", {
-                            required: isSale ? "Vui lòng nhập phần trăm giảm giá" : false,
-                            min: { value: 0, message: "Phần trăm không thể âm" },
-                            max: { value: 100, message: "Phần trăm không thể lớn hơn 100" },
-                            validate: {
-                              validDiscount: (value) => {
-                                const price = watch("price");
-                                if (price && value && price <= (price * value) / 100) {
-                                  return "Phần trăm giảm giá không hợp lệ vì giá khuyến mãi sẽ âm hoặc bằng giá gốc";
-                                }
-                                return true;
-                              }
-                            }
-                          })}
-                          className={`block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.discountPercentage ? "border-red-300" : ""
-                            }`}
-                          placeholder="0"
-                        />
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                          <span className="text-gray-500 sm:text-sm">%</span>
-                        </div>
-                      </div>
-                      {errors.discountPercentage && (
-                        <p className="mt-1 text-sm text-red-600">{errors.discountPercentage.message}</p>
-                      )}
-                    </div>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="isSale" className="block text-sm font-medium text-gray-700">
+                    Đang giảm giá
+                  </label>
+                  <Controller
+                    name="isSale"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <Switch
+                        checked={value}
+                        onChange={onChange}
+                        className={`${value ? "bg-blue-600" : "bg-gray-200"
+                          } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+                      >
+                        <span className="sr-only">Bật giảm giá</span>
+                        <span
+                          className={`${value ? "translate-x-5" : "translate-x-0"
+                            } pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                        >
+                          <span
+                            className={`${value ? "opacity-0 duration-100 ease-out" : "opacity-100 duration-200 ease-in"
+                              } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
+                            aria-hidden="true"
+                          >
+                            <svg className="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 12 12">
+                              <path
+                                d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </span>
+                          <span
+                            className={`${value ? "opacity-100 duration-200 ease-in" : "opacity-0 duration-100 ease-out"
+                              } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
+                            aria-hidden="true"
+                          >
+                            <svg className="h-3 w-3 text-blue-600" fill="currentColor" viewBox="0 0 12 12">
+                              <path d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414zm3.414 2l4-4-1.414-1.414-4 4 1.414 1.414z" />
+                            </svg>
+                          </span>
+                        </span>
+                      </Switch>
+                    )}
+                  />
+                </div>
 
-                    <div>
-                      <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">
-                        Giá khuyến mãi (tự động tính)
-                      </label>
-                      <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                          <span className="text-gray-500 sm:text-sm">₫</span>
-                        </div>
-                        <input
-                          type="number"
-                          id="salePrice"
-                          className="block w-full rounded-md border-gray-300 pl-7 pr-12 bg-gray-100 sm:text-sm"
-                          value={discountedPrice?.toFixed(0) || ""}
-                          readOnly
-                        />
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                          <span className="text-gray-500 sm:text-sm">VND</span>
-                        </div>
+                {isSale && (
+                  <div className="mt-2">
+                    <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700">
+                      Giá khuyến mãi
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <span className="text-gray-500 sm:text-sm">₫</span>
+                      </div>
+                      <input
+                        type="number"
+                        id="salePrice"
+                        {...register("salePrice", {
+                        
+                          min: { value: 0, message: "Giá không thể âm" },
+                          validate: (value) => {
+                            const price = watch("price")
+                            return !value || !price || value < price || "Giá khuyến mãi phải nhỏ hơn giá gốc"
+                          },
+                        })}
+                        className={`block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.salePrice ? "border-red-300" : ""
+                          }`}
+                        placeholder="0"
+                        value={discountedPrice || ""}
+
+                      />
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <span className="text-gray-500 sm:text-sm">VND</span>
                       </div>
                     </div>
+                    {errors.salePrice && <p className="mt-1 text-sm text-red-600">{errors.salePrice.message}</p>}
+                  </div>
+                )}
+
+                {isSale && (
+                  <div className="mt-2">
+                    <label htmlFor="discountPercentage" className="block text-sm font-medium text-gray-700">
+                      Phần trăm giảm giá
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <input
+                        type="number"
+                        id="discountPercentage"
+                        {...register("discountPercentage", {
+                          required: isSale ? "Vui lòng nhập phần trăm giảm giá" : false,
+                          min: { value: 0, message: "Phần trăm không thể âm" },
+                          max: { value: 100, message: "Phần trăm không thể lớn hơn 100" },
+                        })}
+                        className={`block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${errors.discountPercentage ? "border-red-300" : ""
+                          }`}
+                        placeholder="0"
+                      />
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <span className="text-gray-500 sm:text-sm">%</span>
+                      </div>
+                    </div>
+                    {errors.discountPercentage && <p className="mt-1 text-sm text-red-600">{errors.discountPercentage.message}</p>}
                   </div>
                 )}
               </div>

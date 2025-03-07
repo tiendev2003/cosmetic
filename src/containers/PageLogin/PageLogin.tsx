@@ -1,7 +1,6 @@
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import { FC, useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router";
 import { AuthContext, AuthContextType } from "../../context/AuthContext";
 import ButtonPrimary from "../../shared/Button/ButtonPrimary";
@@ -14,27 +13,24 @@ export interface PageLoginProps {
 const PageLogin: FC<PageLoginProps> = ({ className = "" }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [showPassword, setShowPassword] = useState(false);
-  const { login ,isAuthenticated} = useContext<AuthContextType>(AuthContext as any);
+  const { login, isAuthenticated } = useContext<AuthContextType>(AuthContext as any);
   const navigate = useNavigate();
   useEffect(() => {
-    if(isAuthenticated){
+    if (isAuthenticated) {
       navigate("/");
     }
   }
-  ,[isAuthenticated])
+    , [isAuthenticated])
 
   const onSubmit = async (data: any) => {
     try {
       const { email, password } = data;
       await login({ email, password });
       // navigate("/");
-      toast.success("Đăng nhập thành công");
 
     } catch (error) {
       console.error("Failed to login", error);
-      toast.error("Đăng nhập thất bại");
-
-    }
+     }
 
   };
 

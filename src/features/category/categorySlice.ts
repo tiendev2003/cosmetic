@@ -24,7 +24,7 @@ export const fetchCategories = createAsyncThunk(
   async ({
     page = 1,
     search = "",
-    size = 10,
+    size  ,
   }: {
     page?: number;
     search?: string;

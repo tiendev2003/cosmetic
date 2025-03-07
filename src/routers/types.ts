@@ -19,6 +19,7 @@ export interface LocationStates {
   "/account-change-password"?: {};
   "/account-address"?: {};
   "/account-my-order"?: {};
+  "/account-my-order/review/:id"?: {};
   "/account-my-order/:id"?: {};
   "/cart"?: {};
   "/cua-hang/:id"?: {};

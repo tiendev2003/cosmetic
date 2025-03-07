@@ -2,7 +2,7 @@ import { Pagination } from "./pagination.types";
 
 export enum DiscountType {
   PERCENTAGE = "PERCENTAGE",
-  FIXED_AMOUNT = "FIXED_AMOUNT",
+  FIXED = "FIXED",
 }
 
 export interface Discount {

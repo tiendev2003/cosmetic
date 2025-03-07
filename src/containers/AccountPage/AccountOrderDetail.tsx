@@ -1,11 +1,12 @@
 import {
     BanknotesIcon,
     EnvelopeIcon,
-    PhoneIcon
+    PhoneIcon,
+    StarIcon
 } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import Prices from "../../components/Prices";
 import { fetchOrderDetails, updateOrderStatus } from "../../features/order/orderSlice";
 import ButtonSecondary from "../../shared/Button/ButtonSecondary";
@@ -16,8 +17,9 @@ import formatCurrencyVND from "../../utils/formatMoney";
 import CommonLayout from "./CommonLayout";
 const AccountOrderDetail = () => {
     const { id } = useParams<{ id: string }>();
-    const { orderDetails: order, loading, error } = useSelector((state: RootState) => state.orders);
+    const { orderDetails: order,   error } = useSelector((state: RootState) => state.orders);
     const dispatch: AppDispatch = useDispatch();
+    const navigate = useNavigate();
     useEffect(() => {
         if (id) {
             dispatch(fetchOrderDetails(Number(id)));
@@ -37,10 +39,15 @@ const AccountOrderDetail = () => {
             console.log(error);
         }
     };
-
-    if (loading) {
-        return <div className="px-6 py-4 text-center text-sm text-gray-500">Đang tải dữ liệu...</div>;
+    const handleReviewProduct = ({ productId }: {
+        productId: number
+        orderItemId: number
+    }) => {
+        console.log("productId", productId)
+        navigate(`/account-my-order/review/${productId}?orderId=${order?.id}`);
     }
+
+   
     if (error) {
         return <div className="px-6 py-4 text-center text-sm text-gray-500">{error}</div>;
     }
@@ -48,7 +55,9 @@ const AccountOrderDetail = () => {
         return <div className="px-6 py-4 text-center text-sm text-gray-500">Không tìm thấy đơn hàng</div>;
     }
     const renderProductItem = (cartItem: CartItem, index: number) => {
-        const { product, quantity, unitPrice } = cartItem;
+        const { product, quantity, unitPrice, id  } = cartItem;
+        const canReview = order.status === OrderStatus.DELIVERED
+        console.log("canReview", product)
         return (
             <div key={index} className="flex py-4 sm:py-7 last:pb-0 first:pt-0">
                 <div className="h-24 w-16 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
@@ -79,7 +88,18 @@ const AccountOrderDetail = () => {
                             <span className="inline-block sm:hidden">x</span>
                             <span className="ml-2">{quantity}</span>
                         </p>
-
+                        {canReview && (
+                            <button
+                                onClick={() => handleReviewProduct({
+                                    productId: product.id,
+                                    orderItemId: id
+                                })}
+                                className="flex items-center text-primary-600 hover:text-primary-500 font-medium"
+                            >
+                                <StarIcon className="h-4 w-4 mr-1" />
+                                Đánh giá sản phẩm
+                            </button>
+                        )}
 
                     </div>
                 </div>
@@ -101,7 +121,7 @@ const AccountOrderDetail = () => {
                             <span>{formatDate(order?.orderDate ?? "")}</span>
                             <span className="mx-2">·</span>
                             <span className="text-primary-500">{
-                                order.status 
+                                order.status
                             }</span>
                         </p>
                     </div>

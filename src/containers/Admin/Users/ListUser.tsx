@@ -1,12 +1,12 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { EyeIcon, LockClosedIcon, LockOpenIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, LockOpenIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { debounce } from 'lodash';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
-import { NavLink } from 'react-router';
 import { blockUser, fetchUsers } from '../../../features/users/userSlice';
 import { AppDispatch, RootState } from '../../../store';
+import PaginationItem from '../PaginationItem';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -14,7 +14,7 @@ function classNames(...classes: string[]) {
 
 const ListUser = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { users, loading, error, pagination } = useSelector((state: RootState) => state.users);
+  const { users, error, pagination } = useSelector((state: RootState) => state.users);
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [searchName, setSearchName] = useState<string>('');
@@ -22,7 +22,7 @@ const ListUser = () => {
 
   useEffect(() => {
     dispatch(fetchUsers({ page: 1, search: searchName, size: pageSize }));
-  }, [dispatch, searchName, pageSize]);
+  }, [dispatch, pageSize]);
 
   const openLockModal = (id: number) => {
     setSelectedUserId(id);
@@ -51,9 +51,7 @@ const ListUser = () => {
   };
 
   const handlePageChange = (page: number) => {
-    if (page > 0 && page <= (pagination?.totalPages || 1)) {
-      dispatch(fetchUsers({ page, search: searchName, size: pageSize }));
-    }
+    dispatch(fetchUsers({ page, search: searchName, size: pageSize }));
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -127,13 +125,7 @@ const ListUser = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
-                  Đang tải dữ liệu...
-                </td>
-              </tr>
-            ) : error ? (
+            {error ? (
               <tr>
                 <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
                   {error}
@@ -165,22 +157,13 @@ const ListUser = () => {
                     {user.updatedDate}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <NavLink
-                        to={`/admin/user/view/${user.id}`}
-                        className="text-indigo-600 hover:text-indigo-900"
-                        title="Xem"
-                      >
-                        <EyeIcon className="h-5 w-5" />
-                      </NavLink>
-                      <button
-                        onClick={() => openLockModal(user.id)}
-                        className="text-red-600 hover:text-red-900"
-                        title={user.locked ? "Mở Khóa" : "Khóa"}
-                      >
-                        {!user.locked ? <LockOpenIcon className="h-5 w-5" /> : <LockClosedIcon className="h-5 w-5" />}
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => openLockModal(user.id)}
+                      className="text-red-600 hover:text-red-900"
+                      title={user.locked ? "Mở Khóa" : "Khóa"}
+                    >
+                      {!user.locked ? <LockOpenIcon className="h-5 w-5" /> : <LockClosedIcon className="h-5 w-5" />}
+                    </button>
                   </td>
                 </tr>
               ))
@@ -196,59 +179,15 @@ const ListUser = () => {
       </div>
 
       {/* Pagination */}
-      <div className="mt-4 flex justify-between items-center flex-wrap gap-3">
-        <div className="flex items-center space-x-4">
-          <p className="text-sm text-gray-700">
-            Hiển thị <span className="font-medium">{users.length}</span> trong{' '}
-            <span className="font-medium">{pagination?.totalItems}</span> mục
-          </p>
-          <div className="flex items-center">
-            <label htmlFor="pageSize" className="text-sm text-gray-700 mr-2">
-              Số mục mỗi trang:
-            </label>
-            <select
-              id="pageSize"
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              className="rounded-md border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={15}>15</option>
-              <option value={20}>20</option>
-            </select>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handlePageChange((pagination?.currentPage || 1) - 1)}
-            disabled={pagination?.currentPage === 0}
-            className="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-          >
-            Trước
-          </button>
-          {Array.from({ length: pagination?.totalPages || 1 }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={classNames(
-                pagination?.currentPage === page - 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700',
-                'px-3 py-1 rounded-md hover:bg-indigo-500 hover:text-white'
-              )}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            onClick={() => handlePageChange((pagination?.currentPage || 1) + 1)}
-            disabled={(pagination?.currentPage ?? 0) + 1 === pagination?.totalPages}
-            className="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-          >
-            Sau
-          </button>
-        </div>
-      </div>
 
+      <PaginationItem
+        length={users.length}
+        pagination={pagination}
+        pageSize={pageSize}
+        handlePageSizeChange={handlePageSizeChange}
+        handlePageChange={handlePageChange}
+        classNames={classNames}
+      />
       {/* Lock/Unlock Confirmation Modal */}
       <Transition show={isLockModalOpen} as="div">
         <Dialog as="div" className="relative z-10" onClose={closeLockModal}>

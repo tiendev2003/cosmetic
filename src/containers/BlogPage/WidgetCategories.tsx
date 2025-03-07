@@ -31,7 +31,7 @@ const WidgetCategories: FC<WidgetCategoriesProps> = ({
       />
       <div className="flow-root">
         <div className="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-700">
-          {categoryCount && categoryCount.map((category: BlogCategoryCount, index: number) => (
+          {categoryCount && categoryCount.slice(0,6).map((category: BlogCategoryCount, index: number) => (
             <CardCategory1
               blogCategory={category}
               className="p-4 xl:p-5 hover:bg-neutral-200 dark:hover:bg-neutral-700"

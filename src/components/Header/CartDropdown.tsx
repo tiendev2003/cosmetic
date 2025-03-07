@@ -36,7 +36,7 @@ export default function CartDropdown() {
       <div key={index} className="flex py-5 last:pb-0">
         <div className="relative h-24 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           <img
-            src={product?.productImages[0].image || ""}
+            src={product?.productImages[0]?.image || ""}
             alt={product?.name}
             className="h-full w-full object-contain object-center"
           />

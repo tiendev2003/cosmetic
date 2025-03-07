@@ -1,4 +1,4 @@
-import debounce from "lodash/debounce"; // Thêm import lodash debounce
+import debounce from "lodash/debounce";
 import Slider from "rc-slider";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,13 +17,15 @@ const DATA_sortOrderRadios = [
   { name: "Price High - Low", id: "Price-high-low" },
 ];
 
-const PRICE_RANGE = [1, 10000000];
+const PRICE_RANGE = [10000, 1000000];
 
 const SidebarFilters = () => {
   const [rangePrices, setRangePrices] = useState([100, 10000000]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [sortOrderStates, setSortOrderStates] = useState<string>("");
+  const [categorySearch, setCategorySearch] = useState("");
+  const [brandSearch, setBrandSearch] = useState("");
   const dispatch: AppDispatch = useDispatch();
 
   const { categories } = useSelector((state: RootState) => state.categories);
@@ -74,74 +76,97 @@ const SidebarFilters = () => {
         brandId: selectedBrand ? parseInt(selectedBrand) : undefined,
         sortBy,
         sortDirection,
-
       })
     );
   };
-  // Debounce hàm handleFilterChange với thời gian chờ 300ms
+
   const debouncedHandleFilterChange = useCallback(
     debounce(handleFilterChange, 300),
-    [rangePrices, selectedCategory, selectedBrand, sortOrderStates,  dispatch]
+    [rangePrices, selectedCategory, selectedBrand, sortOrderStates, dispatch]
   );
 
-  // Chỉ gọi hàm debounce khi rangePrices thay đổi
   useEffect(() => {
     debouncedHandleFilterChange();
-    // Hủy debounce khi component unmount
     return () => {
       debouncedHandleFilterChange.cancel();
     };
   }, [rangePrices, debouncedHandleFilterChange]);
 
-  // Chỉ gọi handleFilterChange khi các giá trị thực sự thay đổi
   useEffect(() => {
     handleFilterChange();
   }, [selectedCategory, selectedBrand, sortOrderStates]);
 
-
-  const handleChangeCategory = (name: string) => {
-    setSelectedCategory(name === selectedCategory ? null : name);
+  const handleChangeCategory = (id: string) => {
+    // Nếu id đã được chọn thì bỏ chọn (set về null), nếu không thì chọn id mới
+    setSelectedCategory(id === selectedCategory ? null : id);
   };
 
-  const handleChangeBrand = (name: string) => {
-    setSelectedBrand(name === selectedBrand ? null : name);
+  const handleChangeBrand = (id: string) => {
+    // Nếu id đã được chọn thì bỏ chọn (set về null), nếu không thì chọn id mới
+    setSelectedBrand(id === selectedBrand ? null : id);
   };
+
+  const filteredCategories = categories?.filter((item: Category) =>
+    item.name.toLowerCase().includes(categorySearch.toLowerCase())
+  );
+
+  const filteredBrands = brands?.filter((item: Brand) =>
+    item.name.toLowerCase().includes(brandSearch.toLowerCase())
+  );
 
   const renderTabsCategories = () => (
     <div className="relative flex flex-col pb-8 space-y-4">
       <h3 className="font-semibold mb-2.5">Danh mục</h3>
-      {categories?.map((item: Category, index: number) => (
-        <div key={index} className="">
-          <Radio
-            id={item.id.toString()}
-            name="category"
-            label={item.name}
-            checked={selectedCategory === item.id.toString()} // Sử dụng checked thay vì defaultChecked
-            sizeClassName="w-5 h-5"
-            onChange={() => handleChangeCategory(item.id.toString())}
-            className="!text-sm"
-          />
-        </div>
-      ))}
+      <input
+        type="text"
+        placeholder="Tìm kiếm danh mục..."
+        value={categorySearch}
+        onChange={(e) => setCategorySearch(e.target.value)}
+        className="mb-4 p-2 border border-neutral-200 rounded"
+      />
+      <div className="max-h-60 overflow-y-auto space-y-2 px-1">
+        {filteredCategories?.map((item: Category, index: number) => (
+          <div key={index} className="">
+            <Radio
+              id={item.id.toString()}
+              name="category"
+              label={item.name}
+              checked={selectedCategory === item.id.toString()}
+              sizeClassName="w-5 h-5"
+              onChange={() => handleChangeCategory(item.id.toString())}
+              className="!text-sm"
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 
   const renderTabsBrand = () => (
     <div className="relative flex flex-col py-8 space-y-4">
       <h3 className="font-semibold mb-2.5">Thương hiệu</h3>
-      {brands?.map((item: Brand, index: number) => (
-        <div key={index} className="">
-          <Radio
-            id={item.id.toString()}
-            name="brand"
-            label={item.name}
-            checked={selectedBrand === item.id.toString()} // Sử dụng checked thay vì defaultChecked
-            sizeClassName="w-5 h-5"
-            onChange={() => handleChangeBrand(item.id.toString())}
-            className="!text-sm"
-          />
-        </div>
-      ))}
+      <input
+        type="text"
+        placeholder="Tìm kiếm thương hiệu..."
+        value={brandSearch}
+        onChange={(e) => setBrandSearch(e.target.value)}
+        className="mb-4 p-2 border border-neutral-200 rounded"
+      />
+      <div className="max-h-60 overflow-y-auto space-y-2 px-1">
+        {filteredBrands?.map((item: Brand, index: number) => (
+          <div key={index} className="">
+            <Radio
+              id={item.id.toString()}
+              name="brand"
+              label={item.name}
+              checked={selectedBrand === item.id.toString()}
+              sizeClassName="w-5 h-5"
+              onChange={() => handleChangeBrand(item.id.toString())}
+              className="!text-sm"
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 
@@ -153,8 +178,8 @@ const SidebarFilters = () => {
           range
           min={PRICE_RANGE[0]}
           max={PRICE_RANGE[1]}
-          step={1}
-          value={[rangePrices[0], rangePrices[1]]} // Sử dụng value thay vì defaultValue để đồng bộ với state
+          step={10000}
+          value={[rangePrices[0], rangePrices[1]]}
           allowCross={false}
           onChange={(_input: number | number[]) =>
             setRangePrices(_input as number[])
@@ -171,7 +196,7 @@ const SidebarFilters = () => {
           </label>
           <div className="mt-1 relative rounded-md">
             <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500 sm:text-sm">
-              $
+              đ
             </span>
             <input
               type="text"
@@ -192,7 +217,7 @@ const SidebarFilters = () => {
           </label>
           <div className="mt-1 relative rounded-md">
             <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500 sm:text-sm">
-              $
+             đ
             </span>
             <input
               type="text"
@@ -217,7 +242,7 @@ const SidebarFilters = () => {
           key={item.id}
           name="radioNameSort"
           label={item.name}
-          checked={sortOrderStates === item.id} // Sử dụng checked thay vì defaultChecked
+          checked={sortOrderStates === item.id}
           sizeClassName="w-5 h-5"
           onChange={setSortOrderStates}
           className="!text-sm"
@@ -225,13 +250,27 @@ const SidebarFilters = () => {
       ))}
     </div>
   );
+  const handleClearFilters = () => {
+    setSelectedCategory(null);
+    setSelectedBrand(null);
+    setRangePrices([PRICE_RANGE[0], PRICE_RANGE[1]]);
+    setSortOrderStates("");
+    setCategorySearch("");
+    setBrandSearch("");
+  };
+
 
   return (
     <div className="divide-y divide-slate-200 dark:divide-slate-700">
+      <button
+        onClick={handleClearFilters}
+        className="mb-4 text-blue-500 hover:underline"
+      >
+        Xóa tất cả bộ lọc
+      </button>
       {renderTabsCategories()}
       {renderTabsBrand()}
       {renderTabsPriceRage()}
-
       {renderTabsSortOrder()}
     </div>
   );

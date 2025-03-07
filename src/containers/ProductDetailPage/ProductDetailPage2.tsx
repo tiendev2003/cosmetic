@@ -8,12 +8,11 @@ import NcInputNumber from "../../components/NcInputNumber";
 import Prices from "../../components/Prices";
 import ReviewItem from "../../components/ReviewItem";
 import { addCartItem } from "../../features/cart/cartSlice";
-import { addReviewProduct, fetchProductDetail } from "../../features/product/productSlice";
+import { fetchProductDetail } from "../../features/product/productSlice";
 import ButtonPrimary from "../../shared/Button/ButtonPrimary";
 import ButtonSecondary from "../../shared/Button/ButtonSecondary";
 import NcImage from "../../shared/NcImage/NcImage";
 import { AppDispatch, RootState } from "../../store";
-import { ReviewRequest } from "../../types";
 import formatCurrencyVND from "../../utils/formatMoney";
 import AccordionInfo from "./AccordionInfo";
 import ModalPhotos from "./ModalPhotos";
@@ -39,33 +38,13 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenModalViewAllReviews, setIsOpenModalViewAllReviews] = useState(false);
   const [openFocusIndex, setOpenFocusIndex] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
 
   const handleOpenModal = (index: number) => {
     setIsOpen(true);
     setOpenFocusIndex(index);
   };
-  const handleSubmitReview = async () => {
-    try {
-      await dispatch(addReviewProduct(reviewForm)).unwrap();
-      setReviewForm({
-        productId: Number(id),
-        star: 0,
-        review: "",
-      });
-      toast.success("Gửi đánh giá thành công");
-    } catch (error) {
-      console.log(error);
-      toast.error("Gửi đánh giá thất bại");
-
-    }
-  }
   const handleCloseModal = () => setIsOpen(false);
-  const [reviewForm, setReviewForm] = useState<ReviewRequest>({
-    productId: Number(id),
-    star: 0,
-    review: "",
-  });
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -77,7 +56,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
   if (!product) {
     return <div>No product found</div>;
   }
-   
+
   const handleAddToCart = async () => {
     try {
 
@@ -121,7 +100,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
       <div className="flex ">
         <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           <img
-            src={product?.productImages[0].image || "/default-image.jpg"}
+            src={product?.productImages[0]?.image || "/default-image.jpg"}
             alt={product?.name || "Product Image"}
             className="h-full w-full object-cover object-center"
           />
@@ -160,9 +139,9 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
   };
   const renderSectionSidebar = () => {
     const reviewsCount = product?.reviews?.length || 0;
-  const averageRating = reviewsCount > 0 
-    ? product.reviews.reduce((acc, review) => acc + review.star, 0) / reviewsCount 
-    : 0;
+    const averageRating = reviewsCount > 0
+      ? product.reviews.reduce((acc, review) => acc + review.star, 0) / reviewsCount
+      : 0;
 
     return (
       <div className="listingSectionSidebar__wrap lg:shadow-lg">
@@ -172,7 +151,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
             <a href="#reviews" className="flex items-center text-sm font-medium">
               <StarIcon className="w-5 h-5 pb-[1px] text-orange-400" />
               <span className="ml-1.5 flex">
-              <span>{averageRating.toFixed(1)}</span>
+                <span>{averageRating.toFixed(1)}</span>
 
                 <span className="mx-1.5">·</span>
                 <span className="text-slate-700 dark:text-slate-400 underline">{`${product?.reviews?.length || 0} đánh giá`}</span>
@@ -212,8 +191,8 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
 
   const renderSection1 = () => {
     const reviewsCount = product?.reviews?.length || 0;
-    const averageRating = reviewsCount > 0 
-      ? product.reviews.reduce((acc, review) => acc + review.star, 0) / reviewsCount 
+    const averageRating = reviewsCount > 0
+      ? product.reviews.reduce((acc, review) => acc + review.star, 0) / reviewsCount
       : 0;
     return (
       <div className="listingSection__wrap !space-y-6">
@@ -223,7 +202,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
             <a href="#reviews" className="hidden sm:flex items-center text-sm font-medium">
               <StarIcon className="w-5 h-5 pb-[1px] text-slate-800 dark:text-slate-200" />
               <span className="ml-1.5">
-              <span>{averageRating.toFixed(1)}</span>
+                <span>{averageRating.toFixed(1)}</span>
 
                 <span className="mx-1.5">·</span>
                 <span className="text-slate-700 dark:text-slate-400 underline">{`${product?.reviews?.length || 0} đánh giá`}</span>
@@ -257,11 +236,10 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
   };
 
   const renderReviews = () => {
-      
+
 
     return (
       <div id="reviews" className="scroll-mt-[150px]">
-        {renderReviewForm()}
 
         <h2 className="text-2xl font-semibold flex items-center">
           <StarIcon className="w-7 h-7 mb-0.5" />
@@ -287,63 +265,6 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
       </div>
     );
   };
-  const renderReviewForm = () => {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">Viết đánh giá của bạn</h2>
-        <div className="flex items-center space-x-4">
-          <div className="flex-shrink-0">
-            <img
-              src="/images/avatar/avatar-1.jpg"
-              alt="avatar"
-              className="w-10 h-10 rounded-full"
-            />
-          </div>
-          <div className="flex-1 space-y-4">
-            {/* Rating stars */}
-            <div className="flex items-center space-x-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <StarIcon
-                  key={star}
-                  className={`w-6 h-6 cursor-pointer transition-colors ${(hoverRating || reviewForm.star) >= star
-                    ? "text-yellow-500"
-                    : "text-gray-300"
-                    }`}
-                  onClick={() => setReviewForm({ ...reviewForm, star: star })}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                />
-              ))}
-              <span className="ml-2 text-sm text-gray-500">
-                {reviewForm.star} / 5
-              </span>
-            </div>
-
-            {/* Textarea */}
-            <textarea
-              placeholder="Viết đánh giá của bạn về sản phẩm..."
-              className="w-full p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-1 focus:ring-primary-6000 focus:outline-none"
-              value={reviewForm.review}
-              onChange={(e) =>
-                setReviewForm({ ...reviewForm, review: e.target.value })
-              }
-              rows={4}
-            />
-
-            {/* Submit button */}
-            <div className="flex justify-end">
-              <ButtonPrimary
-                onClick={handleSubmitReview}
-                disabled={!reviewForm.review || reviewForm.star === 0}
-              >
-                Gửi đánh giá
-              </ButtonPrimary>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className={`ListingDetailPage nc-ProductDetailPage2 ${className}`} data-nc-id="ProductDetailPage2">
@@ -357,7 +278,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
               <NcImage
                 containerClassName="aspect-w-3 aspect-h-4 md:absolute md:inset-0"
                 className="object-cover w-full h-full rounded-md sm:rounded-xl"
-                src={product.productImages[0].image}
+                src={product?.productImages[0]?.image}
               />
               <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-40 transition-opacity"></div>
             </div>
@@ -368,11 +289,11 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
               <NcImage
                 containerClassName="absolute inset-0"
                 className="object-cover w-full h-full rounded-md sm:rounded-xl"
-                src={product.productImages[1].image}
+                src={product?.productImages[1]?.image}
               />
               <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-40 transition-opacity"></div>
             </div>
-            {product.productImages.slice(2).map((item, index) => (
+            {product?.productImages?.slice(2).map((item, index) => (
               <div
                 key={index}
                 className={`relative rounded-md sm:rounded-xl overflow-hidden ${index >= 2 ? "block" : ""}`}
@@ -406,7 +327,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
         </div>
       </header>
       <ModalPhotos
-        imgs={product.productImages.map((img) => img.image)}
+        imgs={product?.productImages?.map((img) => img.image)}
         isOpen={isOpen}
         onClose={handleCloseModal}
         initFocus={openFocusIndex}

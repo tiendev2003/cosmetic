@@ -14,8 +14,9 @@ export interface PageSignUpProps {
 }
 
 const PageSignUp: FC<PageSignUpProps> = ({ className = "" }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -24,8 +25,7 @@ const PageSignUp: FC<PageSignUpProps> = ({ className = "" }) => {
     if (token) {
       navigate("/");
     }
-  }
-    , []);
+  }, []);
 
   const onSubmit = async (data: any) => {
     try {
@@ -50,42 +50,57 @@ const PageSignUp: FC<PageSignUpProps> = ({ className = "" }) => {
           Đăng ký
         </h2>
         <div className="max-w-md mx-auto space-y-6 ">
-
-          {/* FORM */}
           <form className="grid grid-cols-1 gap-6" onSubmit={handleSubmit(onSubmit)}>
+            
+            {/* Username */}
             <label className="block">
-              <span className="text-neutral-800 dark:text-neutral-200">
-                Tên người dùng
-              </span>
+              <span className="text-neutral-800 dark:text-neutral-200">Tên người dùng</span>
               <Input
                 type="text"
                 placeholder="Tên người dùng của bạn"
                 className="mt-1"
-                {...register("username", { required: "Tên người dùng là bắt buộc" })}
+                {...register("username", {
+                  required: "Tên người dùng là bắt buộc",
+                  minLength: { value: 3, message: "Tên người dùng phải có ít nhất 3 ký tự" },
+                  maxLength: { value: 20, message: "Tên người dùng không quá 20 ký tự" }
+                })}
               />
               {errors.username && <p className="text-red-500 text-sm">{String(errors.username.message)}</p>}
             </label>
+
+            {/* Email */}
             <label className="block">
-              <span className="text-neutral-800 dark:text-neutral-200">
-                Địa chỉ email
-              </span>
+              <span className="text-neutral-800 dark:text-neutral-200">Địa chỉ email</span>
               <Input
                 type="email"
                 placeholder="example@example.com"
                 className="mt-1"
-                {...register("email", { required: "Email là bắt buộc" })}
+                {...register("email", {
+                  required: "Email là bắt buộc",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Email không hợp lệ"
+                  }
+                })}
               />
-              {errors.email?.message && <p className="text-red-500 text-sm">{String(errors.email.message)}</p>}
+              {errors.email && <p className="text-red-500 text-sm">{String(errors.email.message)}</p>}
             </label>
+
+            {/* Password */}
             <label className="block">
-              <span className="flex justify-between items-center text-neutral-800 dark:text-neutral-200">
-                Mật khẩu
-              </span>
+              <span className="text-neutral-800 dark:text-neutral-200">Mật khẩu</span>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
                   className="mt-1"
-                  {...register("password", { required: "Mật khẩu là bắt buộc" })}
+                  {...register("password", {
+                    required: "Mật khẩu là bắt buộc",
+                    minLength: { value: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
+                    pattern: {
+                      value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/,
+                      message: "Mật khẩu phải có ít nhất 1 chữ cái và 1 số"
+                    }
+                  })}
                 />
                 <button
                   type="button"
@@ -97,10 +112,33 @@ const PageSignUp: FC<PageSignUpProps> = ({ className = "" }) => {
               </div>
               {errors.password && <p className="text-red-500 text-sm">{String(errors.password.message)}</p>}
             </label>
+
+            {/* Confirm Password */}
+            <label className="block">
+              <span className="text-neutral-800 dark:text-neutral-200">Xác nhận mật khẩu</span>
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  className="mt-1"
+                  {...register("confirmPassword", {
+                    required: "Xác nhận mật khẩu là bắt buộc",
+                    validate: (value) => value === watch("password") || "Mật khẩu không khớp"
+                  })}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="text-red-500 text-sm">{String(errors.confirmPassword.message)}</p>}
+            </label>
+
             <ButtonPrimary type="submit">Tiếp tục</ButtonPrimary>
           </form>
 
-          {/* ==== */}
           <span className="block text-center text-neutral-700 dark:text-neutral-300">
             Đã có tài khoản? {` `}
             <Link className="text-green-600" to="/login">

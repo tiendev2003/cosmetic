@@ -82,7 +82,7 @@ const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
           <div key={index} className="relative flex py-4 first:pt-0 last:pb-3">
             <div className="relative h-32 w-5 sm:w-32 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
               <img
-                src={product?.productImages[0].image || "/default-image.jpg"}
+                src={product?.productImages[0]?.image || "/default-image.jpg"}
                 alt={product?.name || "Product Image"}
                 className="h-full w-full object-contain object-center"
               />
@@ -118,7 +118,7 @@ const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              navigate("/page-search");
+               
             }}
             className="flex-1 py-2 text-slate-900 dark:text-slate-100"
           >

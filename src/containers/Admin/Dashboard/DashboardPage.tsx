@@ -138,41 +138,52 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <SummaryCards summary={yearSummary} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column - Welcome Banner and Summary Cards */}
+        <div className="space-y-6">
+          {/* Welcome Banner */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Xu hướng doanh thu</h2>
-          <RevenueChart data={processedData} />
+          {/* Stat Cards - 2x2 Grid */}
+          <SummaryCards summary={yearSummary} />
+          <h2 className="text-lg font-semibold mb-4">Tình trạng đơn hàng</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
+            <PieChart width={400} height={400}>
+              <Pie
+                data={orderStatusCounts}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={renderCustomizedLabel}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="orderCount"
+              >
+                {orderStatusCounts.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+            </PieChart>
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Đơn hàng hàng tháng</h2>
-          <OrdersChart data={processedData} />
+        {/* Right Column - Charts */}
+        <div className="space-y-6">
+          {/* Project Budget Chart */}
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-lg font-semibold mb-4">Xu hướng doanh thu</h2>
+            <RevenueChart data={processedData} />
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-lg font-semibold mb-4">Đơn hàng hàng tháng</h2>
+            <OrdersChart data={processedData} />
+          </div>
         </div>
       </div>
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Tình trạng đơn hàng</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          <PieChart width={400} height={400}>
-            <Pie
-              data={orderStatusCounts}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderCustomizedLabel}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="orderCount"
-            >
-              {orderStatusCounts.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-          </PieChart>
-        </div>
 
-      </div>
+
+
+
+
     </div>
   )
 }

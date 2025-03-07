@@ -1,7 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { PencilSquareIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { debounce } from 'lodash';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink } from 'react-router';
@@ -10,6 +10,7 @@ import { AppDispatch, RootState } from '../../../store';
 import { OrderStatus } from '../../../types/order.types';
 import formatDate from '../../../utils/formatDate';
 import formatCurrencyVND from '../../../utils/formatMoney';
+import PaginationItem from '../PaginationItem';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -23,9 +24,33 @@ const ListOrder = () => {
   const [searchOrderId, setSearchOrderId] = useState<string>('');
   const [pageSize, setPageSize] = useState<number>(5);
 
+
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      dispatch(fetchOrders({ page: 1, search: value, size: pageSize }));
+    }, 500),
+    [dispatch, pageSize] // Dependencies của useCallback
+  );
+
+  // Xử lý khi người dùng nhập vào ô tìm kiếm
+  const handleSearchOrderId = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchOrderId(value);
+    debouncedSearch(value);
+  };
+
+  // Hủy debounce khi component unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
+
   useEffect(() => {
     dispatch(fetchOrders({ page: 1, search: searchOrderId, size: pageSize }));
-  }, [dispatch, searchOrderId, pageSize]);
+  }, [dispatch, pageSize]);
 
   const openDeleteModal = (id: number) => {
     setSelectedOrderId(id);
@@ -60,17 +85,6 @@ const ListOrder = () => {
     dispatch(fetchOrders({ page: 1, search: searchOrderId, size: newSize }));
   };
 
-  const debouncedSearch = debounce((value: string) => {
-    if ((orders?.length ?? 0) < 1) return;
-
-    dispatch(fetchOrders({ page: 1, search: value, size: pageSize }));
-  }, 300);
-
-  const handleSearchOrderId = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchOrderId(value);
-    debouncedSearch(value);
-  };
 
   const handleStatusChange = async (id: number, newStatus: OrderStatus) => {
     try {
@@ -134,13 +148,7 @@ const ListOrder = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                  Đang tải dữ liệu...
-                </td>
-              </tr>
-            ) : error ? (
+            {error ? (
               <tr>
                 <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
                   {error}
@@ -206,59 +214,15 @@ const ListOrder = () => {
       </div>
 
       {/* Pagination */}
-      <div className="mt-4 flex justify-between items-center flex-wrap gap-3">
-        <div className="flex items-center space-x-4">
-          <p className="text-sm text-gray-700">
-            Hiển thị <span className="font-medium">{orders?.length}</span> trong{' '}
-            <span className="font-medium">{pagination?.totalItems}</span> mục
-          </p>
-          <div className="flex items-center">
-            <label htmlFor="pageSize" className="text-sm text-gray-700 mr-2">
-              Số mục mỗi trang:
-            </label>
-            <select
-              id="pageSize"
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              className="rounded-md border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={15}>15</option>
-              <option value={20}>20</option>
-            </select>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handlePageChange((pagination?.currentPage || 1) - 1)}
-            disabled={pagination?.currentPage === 0}
-            className="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-          >
-            Trước
-          </button>
-          {Array.from({ length: pagination?.totalPages || 1 }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={classNames(
-                pagination?.currentPage === page - 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700',
-                'px-3 py-1 rounded-md hover:bg-indigo-500 hover:text-white'
-              )}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            onClick={() => handlePageChange((pagination?.currentPage || 1) + 1)}
-            disabled={(pagination?.currentPage ?? 0) + 1 === pagination?.totalPages}
-            className="px-3 py-1 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-          >
-            Sau
-          </button>
-        </div>
-      </div>
 
+      <PaginationItem
+        length={orders.length}
+        pagination={pagination}
+        pageSize={pageSize}
+        handlePageSizeChange={handlePageSizeChange}
+        handlePageChange={handlePageChange}
+        classNames={classNames}
+      />
       {/* Delete Confirmation Modal */}
       <Transition show={isDeleteModalOpen} as="div">
         <Dialog as="div" className="relative z-10" onClose={closeDeleteModal}>

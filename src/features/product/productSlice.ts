@@ -127,6 +127,7 @@ export const fetchProductById = createAsyncThunk(
   async (id: number, { rejectWithValue }) => {
     try {
       const response = await api.get(`/api/products/${id}`);
+      console.log(response.data);
       if (response.data.status === "error") {
         throw new Error(response.data.message);
       }
@@ -230,14 +231,22 @@ export const fetchNewArrivalsProducts = createAsyncThunk(
   }
 );
 
-export const addReviewProduct = createAsyncThunk(
+export const createReview = createAsyncThunk(
   "product/addReviewProduct",
-  async (review: any) => {
-    const response = await api.post("/api/reviews/add", review);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (review: any,{rejectWithValue}) => {
+    try {
+      const response = await api.post("/api/reviews/add", review);
+      console.log(response.data);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Review;
+    } catch (err: any) {
+      console.log(err.response.data.message);
+      return rejectWithValue(
+        err.response.data.message || "Failed to add review"
+      );
     }
-    return response.data.data as Review;
   }
 );
 
@@ -378,10 +387,7 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || "Failed to filter products";
       })
-      .addCase(searchProducts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+     
       .addCase(
         searchProducts.fulfilled,
         (state, action: PayloadAction<Product[]>) => {
@@ -442,10 +448,7 @@ const productSlice = createSlice({
           action.error.message || "Failed to fetch new arrivals products";
       })
 
-      .addCase(addReviewProduct.fulfilled, (state, action) => {
-        state.loading = false;
-        state.product?.reviews?.push(action.payload);
-      })
+      
 
       .addCase(fetchReviewsByProductId.fulfilled, (state, action) => {
         state.loading = false;

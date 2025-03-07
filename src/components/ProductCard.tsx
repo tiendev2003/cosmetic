@@ -157,23 +157,18 @@ const ProductCard: FC<ProductCardProps> = ({
           {renderGroupButtons(product)}
         </div>
         <div className="space-y-4 px-2.5 pt-5 pb-2.5">
-          <div>
-            <h2 className={`nc-ProductCard__title text-base font-semibold transition-colors`}>
+          <div className="flex flex-col">
+            <h2 className="nc-ProductCard__title text-base font-semibold overflow-hidden text-ellipsis whitespace-nowrap w-full">
               {product?.name || "Product Name"}
             </h2>
-            <p className={`text-sm text-slate-500 dark:text-slate-400 mt-1 `}>
-              {product?.description || "No description available."}
-            </p>
           </div>
-          <div className="flex justify-between items-end ">
+          <div className="flex justify-between items-end">
             <Prices price={product?.price} />
             <div className="flex items-center mb-0.5">
-              <StarIcon className="w-5 h-5 pb-[1px] text-amber-400" />
-              <span className="text-sm ml-1 text-slate-500 dark:text-slate-400">
-                {
-                  product?.reviews?.reduce((acc, review) => acc + review.star, 0) /
-                  (product?.reviews?.length || 1)
-                } ({product?.reviews?.length ?? 0} reviews)
+              <StarIcon className="w-5 h-5 text-amber-400" />
+              <span className="text-sm ml-1 text-slate-500">
+                {product?.reviews?.reduce((acc, review) => acc + review.star, 0) /
+                  (product?.reviews?.length || 1)} ({product?.reviews?.length ?? 0} reviews)
               </span>
             </div>
           </div>
