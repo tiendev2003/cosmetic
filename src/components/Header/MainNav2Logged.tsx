@@ -101,7 +101,7 @@ const MainNav2Logged: FC<MainNav2LoggedProps> = () => {
                 </div>
 
                 <div className="flex mt-1">
-                  <Prices price={product.price} className="mt-0.5" />
+                  <Prices price={product?.salePrice || product?.price} className="mt-0.5" />
                 </div>
               </div>
             </Link>

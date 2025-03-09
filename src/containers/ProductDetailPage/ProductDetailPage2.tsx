@@ -117,7 +117,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
                   <span className="mx-2 border-l border-slate-200 dark:border-slate-700 h-4"></span>
                 </p>
               </div>
-              <Prices price={product?.price * qualitySelected} className="mt-0.5" />
+              <Prices price={(product?.salePrice || product?.price) * qualitySelected} className="mt-0.5" />
             </div>
           </div>
           <div className="flex flex-1 items-end justify-between text-sm">
@@ -146,7 +146,7 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
       <div className="listingSectionSidebar__wrap lg:shadow-lg">
         <div className="space-y-7 lg:space-y-8">
           <div className="flex items-center justify-between space-x-5">
-            <div className="flex text-2xl font-semibold">{formatCurrencyVND(product.price)}</div>
+            <div className="flex text-2xl font-semibold">{formatCurrencyVND(product.salePrice || product.price)}</div>
             <a href="#reviews" className="flex items-center text-sm font-medium">
               <StarIcon className="w-5 h-5 pb-[1px] text-orange-400" />
               <span className="ml-1.5 flex">
@@ -169,18 +169,18 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
             <div className="space-y-2.5">
               <div className="flex justify-between text-slate-600 dark:text-slate-300">
                 <span className="flex">
-                  <span>{`${formatCurrencyVND(product.price)}`}</span>
+                  <span>{`${formatCurrencyVND(product.salePrice || product.price)}`}</span>
                   <span className="mx-2">x</span>
                   <span>{`${qualitySelected} `}</span>
                 </span>
-                <span>{`${formatCurrencyVND(product.price * qualitySelected)}`}</span>
+                <span>{`${formatCurrencyVND((product.salePrice || product.price) * qualitySelected)}`}</span>
               </div>
 
             </div>
             <div className="border-b border-slate-200 dark:border-slate-700"></div>
             <div className="flex justify-between font-semibold">
               <span>Total</span>
-              <span>{`${formatCurrencyVND(product.price * qualitySelected)}`}</span>
+              <span>{`${formatCurrencyVND((product.salePrice || product.price) * qualitySelected)}`}</span>
             </div>
           </div>
         </div>
