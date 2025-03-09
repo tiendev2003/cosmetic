@@ -1,24 +1,35 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { PencilSquareIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { debounce } from 'lodash';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { useDispatch, useSelector } from 'react-redux';
-import { NavLink } from 'react-router';
-import { deleteDiscount, fetchDiscounts } from '../../../features/discount/discountSlice';
-import { AppDispatch, RootState } from '../../../store';
-import PaginationItem from '../PaginationItem';
+import { Dialog, Transition } from "@headlessui/react";
+import {
+  PencilSquareIcon,
+  TrashIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { debounce } from "lodash";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { NavLink } from "react-router";
+import {
+  deleteDiscount,
+  fetchDiscounts,
+} from "../../../features/discount/discountSlice";
+import { AppDispatch, RootState } from "../../../store";
+import PaginationItem from "../PaginationItem";
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 const ListDiscount = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { discounts, error, pagination } = useSelector((state: RootState) => state.discounts);
+  const { discounts, error, pagination } = useSelector(
+    (state: RootState) => state.discounts
+  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedDiscountId, setSelectedDiscountId] = useState<number | null>(null);
-  const [searchName, setSearchName] = useState<string>('');
+  const [selectedDiscountId, setSelectedDiscountId] = useState<number | null>(
+    null
+  );
+  const [searchName, setSearchName] = useState<string>("");
   const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
@@ -39,12 +50,14 @@ const ListDiscount = () => {
     if (selectedDiscountId !== null) {
       try {
         await dispatch(deleteDiscount(selectedDiscountId)).unwrap();
-        toast.success('Xóa giảm giá thành công!');
+        toast.success("Xóa giảm giá thành công!");
         closeDeleteModal();
-        dispatch(fetchDiscounts({ page: 1, search: searchName, size: pageSize })); // Cập nhật lại danh sách với pageSize hiện tại
-      } catch (error) {
-        console.error(error);
-        toast.error('Xóa giảm giá thất bại!');
+        dispatch(
+          fetchDiscounts({ page: 1, search: searchName, size: pageSize })
+        ); // Cập nhật lại danh sách với pageSize hiện tại
+      } catch (error:any) {
+         
+        toast.error(error);
       }
     }
   };
@@ -84,7 +97,10 @@ const ListDiscount = () => {
 
       {/* Search by Name */}
       <div className="mb-6">
-        <label htmlFor="nameSearch" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="nameSearch"
+          className="block text-sm font-medium text-gray-700"
+        >
           Tìm kiếm theo tên
         </label>
         <input
@@ -124,6 +140,9 @@ const ListDiscount = () => {
                 Số tiền giảm giá tối đa
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Trạng thái
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Hành động
               </th>
             </tr>
@@ -131,25 +150,52 @@ const ListDiscount = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {error ? (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td
+                  colSpan={8}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
                   {error}
                 </td>
               </tr>
             ) : discounts.length > 0 ? (
               discounts.map((discount) => (
                 <tr key={discount.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{discount.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {discount.id}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {discount.name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{discount.discountCode}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{discount.discountType}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{discount.discountValue}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{discount.minOrderValue}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{discount.maxDiscountAmount}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {discount.discountCode}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {discount.discountType}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {discount.discountValue}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {discount.minOrderValue}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {discount.maxDiscountAmount}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {" "}
+                    <span
+                      className={classNames(
+                        discount.active === true
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800",
+                        "px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                      )}
+                    >
+                      {discount.active === true ? "Hiển thị" : "Ẩn"}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-
                       <NavLink
                         to={`/admin/discounts/edit/${discount.id}`}
                         className="text-indigo-600 hover:text-indigo-900"
@@ -158,7 +204,9 @@ const ListDiscount = () => {
                         <PencilSquareIcon className="h-5 w-5" />
                       </NavLink>
                       <button
-                        onClick={() => discount.id && openDeleteModal(discount!.id)}
+                        onClick={() =>
+                          discount.id && openDeleteModal(discount!.id)
+                        }
                         className="text-red-600 hover:text-red-900"
                         title="Xóa"
                       >
@@ -170,7 +218,10 @@ const ListDiscount = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td
+                  colSpan={8}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
                   Không tìm thấy giảm giá nào.
                 </td>
               </tr>
@@ -227,12 +278,16 @@ const ListDiscount = () => {
                   </div>
                   <div>
                     <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                      <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-medium leading-6 text-gray-900"
+                      >
                         Xóa giảm giá
                       </Dialog.Title>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Bạn có chắc chắn muốn xóa giảm giá này không? Hành động này không thể hoàn tác.
+                          Bạn có chắc chắn muốn xóa giảm giá này không? Hành
+                          động này không thể hoàn tác.
                         </p>
                       </div>
                     </div>

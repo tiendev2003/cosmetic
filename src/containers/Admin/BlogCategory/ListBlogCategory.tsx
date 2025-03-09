@@ -42,9 +42,9 @@ const ListBlogCategory = () => {
         toast.success('Xóa danh mục blog thành công!');
         closeDeleteModal();
         dispatch(fetchBlogCategories({ page: 1, search: searchName, size: pageSize })); // Cập nhật lại danh sách với pageSize hiện tại
-      } catch (error) {
+      } catch (error:any) {
         console.error(error);
-        toast.error('Xóa danh mục blog thất bại!');
+        toast.error(error);
       }
     }
   };

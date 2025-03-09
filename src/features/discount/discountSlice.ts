@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import api from "../../api/api";
 import { Discount, DiscountListResponse } from "../../types/discount.types";
 import { Pagination } from "../../types/pagination.types";
+import { AxiosError } from "axios";
 
 interface DiscountState {
   discounts: Discount[];
@@ -21,59 +22,98 @@ const initialState: DiscountState = {
 
 export const fetchDiscounts = createAsyncThunk(
   "discount/fetchDiscounts",
-  async ({
-    page = 1,
-    search = "",
-    size = 10,
-  }: {
-    page?: number;
-    search?: string;
-    size?: number;
-  }) => {
-    const response = await api.get(
-      `/api/discounts?page=${page - 1}&search=${search}&size=${size}`
-    );
-    console.log(response.data);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (
+    {
+      page = 1,
+      search = "",
+      size = 10,
+    }: {
+      page?: number;
+      search?: string;
+      size?: number;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.get(
+        `/api/discounts?page=${page - 1}&search=${search}&size=${size}`
+      );
+      console.log(response.data);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data as DiscountListResponse;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data as DiscountListResponse;
   }
 );
 
 export const addDiscount = createAsyncThunk(
   "discount/addDiscount",
-  async (newDiscount: Discount) => {
-    const response = await api.post("/api/discounts", newDiscount);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (newDiscount: Discount, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/api/discounts", newDiscount);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Discount;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Discount;
   }
 );
 
 export const updateDiscount = createAsyncThunk(
   "discount/updateDiscount",
-  async (updatedDiscount: Discount) => {
-    const response = await api.put(
-      `/api/discounts/${updatedDiscount.id}`,
-      updatedDiscount
-    );
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (updatedDiscount: Discount, { rejectWithValue }) => {
+    try {
+      const response = await api.put(
+        `/api/discounts/${updatedDiscount.id}`,
+        updatedDiscount
+      );
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Discount;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Discount;
   }
 );
 
 export const deleteDiscount = createAsyncThunk(
   "discount/deleteDiscount",
-  async (discountId: number) => {
-    const response = await api.delete(`/api/discounts/${discountId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (discountId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/api/discounts/${discountId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return discountId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return discountId;
   }
 );
 
@@ -89,13 +129,21 @@ export const fetchDiscountById = createAsyncThunk(
 );
 export const applyDiscount = createAsyncThunk(
   "discount/applyDiscount",
-  async (code: string) => {
-    console.log(code);
-    const response = await api.post("/api/discounts/apply", { code });
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (code: string, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/api/discounts/apply", { code });
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as number;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as number;
   }
 );
 
@@ -171,7 +219,7 @@ const discountSlice = createSlice({
       )
       .addCase(deleteDiscount.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to delete discount";
+      
       })
       .addCase(fetchDiscountById.pending, (state) => {
         state.loading = true;

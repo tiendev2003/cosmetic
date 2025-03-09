@@ -1,24 +1,30 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { PencilSquareIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { debounce } from 'lodash';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { useDispatch, useSelector } from 'react-redux';
-import { NavLink } from 'react-router';
-import { deleteBrand, fetchBrands } from '../../../features/brand/brandSlice';
-import { AppDispatch, RootState } from '../../../store';
-import PaginationItem from '../PaginationItem';
+import { Dialog, Transition } from "@headlessui/react";
+import {
+  PencilSquareIcon,
+  TrashIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { debounce } from "lodash";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { NavLink } from "react-router";
+import { deleteBrand, fetchBrands } from "../../../features/brand/brandSlice";
+import { AppDispatch, RootState } from "../../../store";
+import PaginationItem from "../PaginationItem";
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 const ListBrand = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { brands, error, pagination } = useSelector((state: RootState) => state.brands);
+  const { brands, error, pagination } = useSelector(
+    (state: RootState) => state.brands
+  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
-  const [searchName, setSearchName] = useState<string>('');
+  const [searchName, setSearchName] = useState<string>("");
   const [pageSize, setPageSize] = useState<number>(5);
 
   useEffect(() => {
@@ -38,11 +44,11 @@ const ListBrand = () => {
     if (selectedBrandId !== null) {
       try {
         await dispatch(deleteBrand(selectedBrandId)).unwrap();
-        toast.success('Xóa thương hiệu thành công!');
+        toast.success("Xóa thương hiệu thành công!");
         closeDeleteModal();
-      } catch (error) {
+      } catch (error :any) {
         console.error(error);
-        toast.error('Xóa thương hiệu thất bại!');
+        toast.error(error);
       }
     }
   };
@@ -57,7 +63,6 @@ const ListBrand = () => {
     dispatch(fetchBrands({ page: 1, search: searchName, size: newSize })); // Gọi ngay với size mới
   };
 
-
   const debouncedSearch = debounce((value: string) => {
     dispatch(fetchBrands({ page: 1, search: value, size: pageSize }));
   }, 300);
@@ -71,7 +76,9 @@ const ListBrand = () => {
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Danh sách thương hiệu</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Danh sách thương hiệu
+        </h1>
         <NavLink
           to="/admin/brand/add"
           className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
@@ -82,7 +89,10 @@ const ListBrand = () => {
 
       {/* Search by Name */}
       <div className="mb-6">
-        <label htmlFor="nameSearch" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="nameSearch"
+          className="block text-sm font-medium text-gray-700"
+        >
           Tìm kiếm theo tên
         </label>
         <input
@@ -129,29 +139,42 @@ const ListBrand = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {error ? (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td
+                  colSpan={8}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
                   {error}
                 </td>
               </tr>
             ) : brands.length > 0 ? (
               brands.map((brand) => (
                 <tr key={brand.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{brand.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {brand.id}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {brand.name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{brand.description}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {brand.description}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <img src={brand.image} alt={brand.name} className="h-10 w-10 rounded-full" />
+                    <img
+                      src={brand.image}
+                      alt={brand.name}
+                      className="h-10 w-10 rounded-full"
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={classNames(
-                        brand.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
-                        'px-2 inline-flex text-xs leading-5 font-semibold rounded-full'
+                        brand.active
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800",
+                        "px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                       )}
                     >
-                      {brand.status}
+                      {brand.active ? "Hoạt động" : "Ẩn"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -162,7 +185,6 @@ const ListBrand = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-
                       <NavLink
                         to={`/admin/brand/edit/${brand.id}`}
                         className="text-indigo-600 hover:text-indigo-900"
@@ -183,7 +205,10 @@ const ListBrand = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td
+                  colSpan={8}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
                   Không tìm thấy thương hiệu nào.
                 </td>
               </tr>
@@ -240,12 +265,16 @@ const ListBrand = () => {
                   </div>
                   <div>
                     <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                      <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-medium leading-6 text-gray-900"
+                      >
                         Xóa thương hiệu
                       </Dialog.Title>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Bạn có chắc chắn muốn xóa thương hiệu này không? Hành động này không thể hoàn tác.
+                          Bạn có chắc chắn muốn xóa thương hiệu này không? Hành
+                          động này không thể hoàn tác.
                         </p>
                       </div>
                     </div>
@@ -274,6 +303,6 @@ const ListBrand = () => {
       </Transition>
     </div>
   );
-}
+};
 
 export default ListBrand;

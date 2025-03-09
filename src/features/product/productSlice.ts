@@ -7,6 +7,7 @@ import {
   ProductDetailResponse,
   ProductRequest,
 } from "../../types/product.types";
+import { AxiosError } from "axios";
 
 interface FilterParams {
   page: number;
@@ -19,7 +20,6 @@ interface FilterParams {
   sortBy?: string;
   sortDirection?: "asc" | "desc";
 }
-
 
 interface ProductState {
   products: Product[];
@@ -57,89 +57,141 @@ const initialState: ProductState = {
 
 export const fetchProducts = createAsyncThunk(
   "product/fetchProducts",
-  async ({
-    page = 1,
-    search = "",
-    size = 10,
-    minPrice,
-    maxPrice,
-    categoryId,
-    brandId,
-    sortBy,
-    sortDirection,
-  }: {
-    page?: number;
-    search?: string;
-    size?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    categoryId?: number;
-    brandId?: number;
-    sortBy?: string;
-    sortDirection?: string;
-  }) => {
-    const response = await api.get(
-      `/api/products?page=${page - 1}&search=${search}&size=${size}${
-        minPrice ? `&minPrice=${minPrice}` : ""
-      }${maxPrice ? `&maxPrice=${maxPrice}` : ""}${
-        categoryId ? `&categoryId=${categoryId}` : ""
-      }${brandId ? `&brandId=${brandId}` : ""}${
-        sortBy ? `&sortBy=${sortBy}` : ""
-      }${sortDirection ? `&sortDirection=${sortDirection}` : ""}`
-    );
-    console.log(response.data);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (
+    {
+      page = 1,
+      search = "",
+      size = 10,
+      minPrice,
+      maxPrice,
+      categoryId,
+      brandId,
+      sortBy,
+      sortDirection,
+      isActive,
+    }: {
+      page?: number;
+      search?: string;
+      size?: number;
+      minPrice?: number;
+      maxPrice?: number;
+      categoryId?: number;
+      brandId?: number;
+      sortBy?: string;
+      sortDirection?: string;
+      isActive?: boolean;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.get(
+        `/api/products?page=${page - 1}&search=${search}&size=${size}${
+          minPrice ? `&minPrice=${minPrice}` : ""
+        }${maxPrice ? `&maxPrice=${maxPrice}` : ""}${
+          categoryId ? `&categoryId=${categoryId}` : ""
+        }${brandId ? `&brandId=${brandId}` : ""}${
+          sortBy ? `&sortBy=${sortBy}` : ""
+        }${
+          sortDirection ? `&sortDirection=${sortDirection}` : ""
+        }&isActive=${isActive}`
+      );
+      console.log(response.data);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data as { data: Product[]; pagination: Pagination };
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data as { data: Product[]; pagination: Pagination };
   }
 );
 
 export const searchProducts = createAsyncThunk(
   "product/searchProducts",
-  async (search: string) => {
-    const response = await api.get(`/api/products/search?keyword=${search}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (search: string, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/products/search?keyword=${search}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      console.log(response.data.data);
+      return response.data.data as Product[];
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    console.log(response.data.data);
-    return response.data.data as Product[];
   }
 );
 
 export const addProduct = createAsyncThunk(
   "product/addProduct",
-  async (newProduct: ProductRequest) => {
-    const response = await api.post("/api/products", newProduct);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (newProduct: ProductRequest, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/api/products", newProduct);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Product;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Product;
   }
 );
 
 export const updateProduct = createAsyncThunk(
   "product/updateProduct",
-  async (updatedProduct: ProductRequest) => {
-    const response = await api.put(
-      `/api/products/${updatedProduct.id}`,
-      updatedProduct
-    );
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (updatedProduct: ProductRequest, { rejectWithValue }) => {
+    try {
+      const response = await api.put(
+        `/api/products/${updatedProduct.id}`,
+        updatedProduct
+      );
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Product;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Product;
   }
 );
 
 export const deleteProduct = createAsyncThunk(
   "product/deleteProduct",
-  async (productId: number) => {
-    const response = await api.delete(`/api/products/${productId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (productId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/api/products/${productId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return productId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return productId;
   }
 );
 
@@ -195,9 +247,6 @@ export const filterProducts = createAsyncThunk(
     sortBy?: string;
     sortDirection?: string;
   }) => {
-    console.log(
-      `minPrice: ${minPrice}, maxPrice: ${maxPrice}, categoryId: ${categoryId}, brandId: ${brandId}, sortBy: ${sortBy}, sortDirection: ${sortDirection}`
-    );
     const response = await api.get(
       `/api/products?page=${page - 1}&search=${search}&size=${size}${
         minPrice ? `&minPrice=${minPrice}` : ""
@@ -205,7 +254,7 @@ export const filterProducts = createAsyncThunk(
         categoryId ? `&categoryId=${categoryId}` : ""
       }${brandId ? `&brandId=${brandId}` : ""}${
         sortBy ? `&sortBy=${sortBy}` : ""
-      }${sortDirection ? `&sortDirection=${sortDirection}` : ""}`
+      }${sortDirection ? `&sortDirection=${sortDirection}` : ""}&isActive=true`
     );
     if (response.data.status === "error") {
       throw new Error(response.data.message);
@@ -361,7 +410,6 @@ const productSlice = createSlice({
       )
       .addCase(deleteProduct.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to delete product";
       })
       .addCase(fetchProductById.pending, (state) => {
         state.loading = true;

@@ -24,19 +24,33 @@ const SidebarFilters = () => {
   const { brands } = useSelector((state: RootState) => state.brands);
   const { filters } = useSelector((state: RootState) => state.products);
 
-  const [rangePrices, setRangePrices] = useState([filters.minPrice || PRICE_RANGE[0], filters.maxPrice || PRICE_RANGE[1]]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(filters.categoryId?.toString() || null);
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(filters.brandId?.toString() || null);
-  const [sortOrderStates, setSortOrderStates] = useState<string>(filters.sortBy || "");
+  const [rangePrices, setRangePrices] = useState([
+    filters.minPrice || PRICE_RANGE[0],
+    filters.maxPrice || PRICE_RANGE[1],
+  ]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    filters.categoryId?.toString() || null
+  );
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(
+    filters.brandId?.toString() || null
+  );
+  const [sortOrderStates, setSortOrderStates] = useState<string>(
+    filters.sortBy || ""
+  );
   const [categorySearch, setCategorySearch] = useState("");
   const [brandSearch, setBrandSearch] = useState("");
 
   useEffect(() => {
-    dispatch(fetchCategories({ page: 1, search: "", size: 100 }));
-    dispatch(fetchBrands({ page: 1, search: "", size: 100 }));
+    dispatch(
+      fetchCategories({ page: 1, search: "", size: 100, isActive: true })
+    );
+    dispatch(fetchBrands({ page: 1, search: "", size: 100, isActive: true }));
   }, [dispatch]);
 
-  const applyFilters = (categoryId: string | null = selectedCategory, brandId: string | null = selectedBrand) => {
+  const applyFilters = (
+    categoryId: string | null = selectedCategory,
+    brandId: string | null = selectedBrand
+  ) => {
     let sortBy: string | undefined = undefined;
     let sortDirection: "asc" | "desc" | undefined = undefined;
 
@@ -77,13 +91,10 @@ const SidebarFilters = () => {
     dispatch(filterProducts(newFilters));
   };
 
-  const debouncedApplyFilters = useCallback(debounce(() => applyFilters(selectedCategory, selectedBrand), 300), [
-    rangePrices,
-    selectedCategory,
-    selectedBrand,
-    sortOrderStates,
-    dispatch,
-  ]);
+  const debouncedApplyFilters = useCallback(
+    debounce(() => applyFilters(selectedCategory, selectedBrand), 300),
+    [rangePrices, selectedCategory, selectedBrand, sortOrderStates, dispatch]
+  );
 
   const handleChangeCategory = (id: string) => {
     const newCategory = id === selectedCategory ? null : id;
@@ -207,11 +218,16 @@ const SidebarFilters = () => {
       </div>
       <div className="flex justify-between space-x-5">
         <div>
-          <label htmlFor="minPrice" className="block text-sm font-medium text-neutral-700">
+          <label
+            htmlFor="minPrice"
+            className="block text-sm font-medium text-neutral-700"
+          >
             Từ
           </label>
           <div className="mt-1 relative rounded-md">
-            <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500 sm:text-sm">đ</span>
+            <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500 sm:text-sm">
+              đ
+            </span>
             <input
               type="text"
               name="minPrice"
@@ -223,11 +239,16 @@ const SidebarFilters = () => {
           </div>
         </div>
         <div>
-          <label htmlFor="maxPrice" className="block text-sm font-medium text-neutral-700">
+          <label
+            htmlFor="maxPrice"
+            className="block text-sm font-medium text-neutral-700"
+          >
             Đến
           </label>
           <div className="mt-1 relative rounded-md">
-            <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500 sm:text-sm">đ</span>
+            <span className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500 sm:text-sm">
+              đ
+            </span>
             <input
               type="text"
               disabled
@@ -262,7 +283,10 @@ const SidebarFilters = () => {
 
   return (
     <div className="divide-y divide-slate-200 dark:divide-slate-700">
-      <button onClick={handleClearFilters} className="mb-4 text-blue-500 hover:underline">
+      <button
+        onClick={handleClearFilters}
+        className="mb-4 text-blue-500 hover:underline"
+      >
         Xóa tất cả bộ lọc
       </button>
       {renderTabsCategories()}

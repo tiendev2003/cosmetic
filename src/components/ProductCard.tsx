@@ -163,7 +163,7 @@ const ProductCard: FC<ProductCardProps> = ({
             </h2>
           </div>
           <div className="flex justify-between items-end">
-            <Prices price={product?.sale ? product?.salePrice ?? 0 : product?.price} />
+            <Prices price={product?.salePrice || product?.price} />
             <div className="flex items-center mb-0.5">
               <StarIcon className="w-5 h-5 text-amber-400" />
               <span className="text-sm ml-1 text-slate-500">

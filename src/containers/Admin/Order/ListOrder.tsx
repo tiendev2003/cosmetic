@@ -163,7 +163,7 @@ const ListOrder = () => {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{order.user.username}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatCurrencyVND(order.totalAmount)}
+                    {formatCurrencyVND(order.finalAmount +25000)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {formatDate(order.orderDate)}

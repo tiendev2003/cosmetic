@@ -41,12 +41,21 @@ export const fetchCart = createAsyncThunk(
 
 export const addCartItem = createAsyncThunk(
   "cart/addCartItem",
-  async (newCartItem: CartItemRequest) => {
-    const response = await api.post("/api/cart/add", newCartItem);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (newCartItem: CartItemRequest, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/api/cart/add", newCartItem);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Cart;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Cart;
   }
 );
 
@@ -106,12 +115,12 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    // clearCarrt 
+    // clearCarrt
     clearCartNew: (state) => {
       state.cart = null;
       state.error = null;
       state.loading = false;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -123,9 +132,9 @@ const cartSlice = createSlice({
         state.loading = false;
         state.cart = action.payload;
       })
-      .addCase(fetchCart.rejected, (state,  ) => {
+      .addCase(fetchCart.rejected, (state) => {
         state.loading = false;
-       })
+      })
 
       .addCase(addCartItem.pending, (state) => {
         state.loading = true;

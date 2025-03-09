@@ -26,13 +26,15 @@ export const fetchBrands = createAsyncThunk(
     page = 1,
     search = "",
     size = 10,
+    isActive=false,
   }: {
     page?: number;
     search?: string;
     size?: number;
+    isActive?: boolean;
   }) => {
     const response = await api.get(
-      `/api/brand?page=${page - 1}&search=${search}&size=${size}`
+      `/api/brand?page=${page - 1}&search=${search}&size=${size}&isActive=${isActive}`
     );
     if (response.data.status === "error") {
       throw new Error(response.data.message);
@@ -173,9 +175,9 @@ const brandSlice = createSlice({
           );
         }
       )
-      .addCase(deleteBrand.rejected, (state, action) => {
+      .addCase(deleteBrand.rejected, (state) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to delete brand";
+       
       })
       .addCase(fetchBrandById.pending, (state) => {
         state.loading = true;

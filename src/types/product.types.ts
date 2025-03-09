@@ -28,7 +28,7 @@ export interface Product {
   category: Category; // Quan hệ ManyToOne với Category
   brand: Brand; // Quan hệ ManyToOne với Brand
   reviews: Review[]; // Quan hệ OneToMany với Review
-  status: string;
+  active: boolean;
   createdDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
   updatedDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
 }
@@ -45,7 +45,7 @@ export interface ProductRequest {
   productUsage: string;
   categoryId: number;
   brandId: number;
-  status: string;
+  active: boolean;
   images: string[];
 }
 

@@ -1,44 +1,50 @@
-import { Editor } from '@tinymce/tinymce-react';
+import { Editor } from "@tinymce/tinymce-react";
 import { FormEvent, useEffect, useState } from "react";
-import toast from 'react-hot-toast';
-import { useDispatch, useSelector } from 'react-redux';
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate, useParams } from "react-router";
-import api from '../../../api/api';
-import { addBlog, fetchBlogById, updateBlog } from '../../../features/blog/blogSlice';
-import { fetchBlogCategories } from '../../../features/blogCategory/blogCategorySlice';
-import { fetchTags } from '../../../features/tag/tagSlice';
-import { fetchUsers } from '../../../features/users/userSlice';
-import { AppDispatch, RootState } from '../../../store';
+import api from "../../../api/api";
+import {
+  addBlog,
+  fetchBlogById,
+  updateBlog,
+} from "../../../features/blog/blogSlice";
+import { fetchBlogCategories } from "../../../features/blogCategory/blogCategorySlice";
+import { fetchTags } from "../../../features/tag/tagSlice";
+import { fetchUsers } from "../../../features/users/userSlice";
+import { AppDispatch, RootState } from "../../../store";
 import { BlogRequest } from "../../../types";
-import { uploadImage } from '../../../utils/uploadImage';
-
-
+import { uploadImage } from "../../../utils/uploadImage";
 
 const AddBlog = () => {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const { blog,   } = useSelector((state: RootState) => state.blogs);
-  const { categories, } = useSelector((state: RootState) => state.blogCategories);
+  const { blog } = useSelector((state: RootState) => state.blogs);
+  const { categories } = useSelector(
+    (state: RootState) => state.blogCategories
+  );
   const { tags } = useSelector((state: RootState) => state.tags);
   const { users } = useSelector((state: RootState) => state.users);
   // State cho form
   const [formData, setFormData] = useState({
-    title: '',
-    content: '',
+    title: "",
+    content: "",
     image: null as File | string | null,
-    status: 'Nháp',
-    categoryId: '',
-    authorId: '',
+    status: "Nháp",
+    categoryId: "",
+    authorId: "",
     tagIds: [] as number[],
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [newTag, setNewTag] = useState(''); // Tag mới từ input
+  const [newTag, setNewTag] = useState(""); // Tag mới từ input
 
   // Xử lý thay đổi input
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -64,24 +70,24 @@ const AddBlog = () => {
 
   // Thêm tag mới
   const addNewTag = () => {
-    if (newTag.trim() !== '') {
+    if (newTag.trim() !== "") {
       const newTagObject = { id: Date.now(), name: newTag };
       setFormData((prev) => ({
         ...prev,
         tagIds: [...prev.tagIds, newTagObject.id],
       }));
-      setNewTag('');
+      setNewTag("");
       // Optionally, you can dispatch an action to add the new tag to the store
       // dispatch(addTag(newTagObject));
-      toast.success('Added new tag successfully');
+      toast.success("Added new tag successfully");
     } else {
-      toast.error('Tag name cannot be empty');
+      toast.error("Tag name cannot be empty");
     }
   };
 
   // Xử lý khi nhấn Enter trong input tag
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addNewTag();
     }
@@ -98,20 +104,16 @@ const AddBlog = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchBlogCategories(
-      { page: 1, search: '', size: 100 }
-    ));
-    dispatch(fetchTags(
-      { page: 1, search: '', size: 100 }
-    ));
-    dispatch(fetchUsers(
-      {
-        page: 1, search: '', size:
-          100
-      }
-    ));
-  }, [
-    dispatch]);
+    dispatch(fetchBlogCategories({ page: 1, search: "", size: 100 }));
+    dispatch(fetchTags({ page: 1, search: "", size: 100 }));
+    dispatch(
+      fetchUsers({
+        page: 1,
+        search: "",
+        size: 100,
+      })
+    );
+  }, [dispatch]);
 
   useEffect(() => {
     if (id) {
@@ -125,7 +127,7 @@ const AddBlog = () => {
             status: blog.status,
             categoryId: blog?.category?.id?.toString(),
             authorId: blog.author.id.toString(),
-            tagIds: blog.tags.map(tag => tag.id),
+            tagIds: blog.tags.map((tag) => tag.id),
           });
           setImagePreview(blog.image);
         }
@@ -139,9 +141,9 @@ const AddBlog = () => {
 
     try {
       let imageUrl = imagePreview;
-      if (formData.image && typeof formData.image !== 'string') {
+      if (formData.image && typeof formData.image !== "string") {
         const formDataImage = new FormData();
-        formDataImage.append('file', formData.image);
+        formDataImage.append("file", formData.image);
         const image = await uploadImage(formDataImage);
         imageUrl = api.getUri() + "/api" + image;
       }
@@ -154,21 +156,26 @@ const AddBlog = () => {
         status: formData.status,
         createdDate: blog ? blog.createdDate : new Date().toISOString(),
         updatedDate: new Date().toISOString(),
-        categoryId: categories.find((cat) => cat.id === Number(formData.categoryId))?.id!,
-        author: users.find((user) => user.id === Number(formData.authorId))?.id!,
-        tags: tags.filter((tag) => formData.tagIds.includes(tag.id)).map((tag) => tag.name),
+        categoryId: categories.find(
+          (cat) => cat.id === Number(formData.categoryId)
+        )?.id!,
+        author: users.find((user) => user.id === Number(formData.authorId))
+          ?.id!,
+        tags: tags
+          .filter((tag) => formData.tagIds.includes(tag.id))
+          .map((tag) => tag.name),
       };
- 
+
       if (blog?.id) {
         await dispatch(updateBlog(newBlog)).unwrap();
-        toast.success('Updated blog successfully');
+        toast.success("Updated blog successfully");
       } else {
         await dispatch(addBlog(newBlog)).unwrap();
-        toast.success('Added blog successfully');
+        toast.success("Added blog successfully");
       }
-      navigate('/admin/blog');
-    } catch (error) {
-      toast.error('Failed to save blog');
+      navigate("/admin/blog");
+    } catch (error: any) {
+      toast.error(error);
     }
   };
 
@@ -186,10 +193,16 @@ const AddBlog = () => {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 bg-white p-6 rounded-lg shadow-md"
+      >
         {/* Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-gray-700"
+          >
             Tiêu đề
           </label>
           <input
@@ -205,33 +218,40 @@ const AddBlog = () => {
 
         {/* Content with TinyMCE */}
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="content"
+            className="block text-sm font-medium text-gray-700"
+          >
             Nội dung
           </label>
           <Editor
-            apiKey='btnhknzsdtdbu8ck8nwda9fxjxrlb2euoccuw6rfr5otxf02'
+            apiKey="btnhknzsdtdbu8ck8nwda9fxjxrlb2euoccuw6rfr5otxf02"
             value={formData.content}
             onEditorChange={handleEditorChange}
             init={{
               height: 400,
               menubar: true,
               plugins: [
-                'advlist autolink lists link image charmap print preview anchor',
-                'searchreplace visualblocks code fullscreen',
-                'insertdatetime media table paste code help wordcount',
+                "advlist autolink lists link image charmap print preview anchor",
+                "searchreplace visualblocks code fullscreen",
+                "insertdatetime media table paste code help wordcount",
               ],
               toolbar:
-                'undo redo | formatselect | bold italic backcolor | \
+                "undo redo | formatselect | bold italic backcolor | \
                 alignleft aligncenter alignright alignjustify | \
-                bullist numlist outdent indent | removeformat | help',
-              content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+                bullist numlist outdent indent | removeformat | help",
+              content_style:
+                "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
             }}
           />
         </div>
 
         {/* Image */}
         <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="image"
+            className="block text-sm font-medium text-gray-700"
+          >
             Hình ảnh
           </label>
           <input
@@ -244,14 +264,21 @@ const AddBlog = () => {
           />
           {imagePreview && (
             <div className="mt-2">
-              <img src={imagePreview} alt="Preview" className="h-40 w-auto rounded-md" />
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="h-40 w-auto rounded-md"
+              />
             </div>
           )}
         </div>
 
         {/* Status */}
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-700"
+          >
             Trạng thái
           </label>
           <select
@@ -268,7 +295,10 @@ const AddBlog = () => {
 
         {/* Category */}
         <div>
-          <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="categoryId"
+            className="block text-sm font-medium text-gray-700"
+          >
             Danh mục
           </label>
           <select
@@ -280,17 +310,21 @@ const AddBlog = () => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
             <option value="">Chọn danh mục</option>
-            {categories && categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
+            {categories &&
+              categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
           </select>
         </div>
 
         {/* Author */}
         <div>
-          <label htmlFor="authorId" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="authorId"
+            className="block text-sm font-medium text-gray-700"
+          >
             Tác giả
           </label>
           <select
@@ -302,17 +336,21 @@ const AddBlog = () => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
             <option value="">Chọn tác giả</option>
-            {users && users.map((author) => (
-              <option key={author.id} value={author.id}>
-                {author.username}
-              </option>
-            ))}
+            {users &&
+              users.map((author) => (
+                <option key={author.id} value={author.id}>
+                  {author.username}
+                </option>
+              ))}
           </select>
         </div>
 
         {/* Tags */}
         <div>
-          <label htmlFor="tagIds" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="tagIds"
+            className="block text-sm font-medium text-gray-700"
+          >
             Thẻ
           </label>
           <select
@@ -329,7 +367,9 @@ const AddBlog = () => {
               </option>
             ))}
           </select>
-          <p className="mt-1 text-sm text-gray-500">Giữ Ctrl (hoặc Cmd) để chọn nhiều thẻ.</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Giữ Ctrl (hoặc Cmd) để chọn nhiều thẻ.
+          </p>
 
           {/* Input để thêm tag mới */}
           <div className="mt-2 flex items-center space-x-2">
@@ -371,4 +411,4 @@ const AddBlog = () => {
   );
 };
 
-export default AddBlog
+export default AddBlog;

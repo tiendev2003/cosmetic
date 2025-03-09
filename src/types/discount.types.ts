@@ -18,7 +18,7 @@ export interface Discount {
   applicableProductId: number;
   startDate: Date;
   endDate: Date;
-  isActive: boolean;
+  active: boolean;
 }
 
 export interface DiscountListResponse {

@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
-import { useDispatch, useSelector } from 'react-redux';
-import { NavLink, useNavigate, useParams } from 'react-router';
-import api from '../../../api/api';
-import { addCategory, fetchCategoryById, updateCategory } from '../../../features/category/categorySlice';
-import { AppDispatch, RootState } from '../../../store';
-import { Category } from '../../../types';
-import { uploadImage } from '../../../utils/uploadImage';
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { NavLink, useNavigate, useParams } from "react-router";
+import api from "../../../api/api";
+import {
+  addCategory,
+  fetchCategoryById,
+  updateCategory,
+} from "../../../features/category/categorySlice";
+import { AppDispatch, RootState } from "../../../store";
+import { Category } from "../../../types";
+import { uploadImage } from "../../../utils/uploadImage";
 
 const AddCategories = () => {
   const navigate = useNavigate();
@@ -29,7 +33,7 @@ const AddCategories = () => {
     const file = e.target.files?.[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setValue('image', file); // Use setValue to update the image file
+      setValue("image", file); // Use setValue to update the image file
       setImagePreview(imageUrl);
     }
   };
@@ -39,10 +43,10 @@ const AddCategories = () => {
       dispatch(fetchCategoryById(Number(id))).then((action) => {
         if (fetchCategoryById.fulfilled.match(action)) {
           const category = action.payload;
-          setValue('name', category.name);
-          setValue('description', category.description);
-          setValue('image', category.image);
-          setValue('status', category.status);
+          setValue("name", category.name);
+          setValue("description", category.description);
+          setValue("image", category.image);
+          setValue("active", category.active ? "true" : "false");
           setImagePreview(category.image);
         }
       });
@@ -53,9 +57,9 @@ const AddCategories = () => {
   const onSubmit = async (data: any) => {
     try {
       let imageUrl = imagePreview;
-      if (data.image && typeof data.image !== 'string') {
+      if (data.image && typeof data.image !== "string") {
         const formDataImage = new FormData();
-        formDataImage.append('file', data.image);
+        formDataImage.append("file", data.image);
         const image = await uploadImage(formDataImage);
         imageUrl = api.getUri() + "/api" + image;
       }
@@ -65,22 +69,21 @@ const AddCategories = () => {
         name: data.name,
         description: data.description,
         image: imageUrl!,
-        status: data.status,
+        active: data.active === "true",
         createdDate: category ? category.createdDate : new Date().toISOString(),
         updatedDate: new Date().toISOString(),
       };
 
       if (category?.id) {
         await dispatch(updateCategory(newCategory)).unwrap();
-        toast.success('Cập nhật danh mục thành công');
+        toast.success("Cập nhật danh mục thành công");
       } else {
         await dispatch(addCategory(newCategory)).unwrap();
-        toast.success('Thêm danh mục thành công');
+        toast.success("Thêm danh mục thành công");
       }
-      navigate('/admin/categories');
-    } catch (error) {
-      console.log('Failed to save category:', error);
-      toast.error('Có lỗi xảy ra khi lưu danh mục');
+      navigate("/admin/categories");
+    } catch (error: any) {
+      toast.error(error);
     }
   };
 
@@ -88,32 +91,54 @@ const AddCategories = () => {
     <div className="p-6 mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{category ? `Chỉnh danh mục: ${category.name}` : 'Thêm danh mục'}</h1>
-        <NavLink to="/admin/categories" className="text-indigo-600 hover:text-indigo-900 flex items-center">
+        <h1 className="text-2xl font-bold text-gray-900">
+          {category ? `Chỉnh danh mục: ${category.name}` : "Thêm danh mục"}
+        </h1>
+        <NavLink
+          to="/admin/categories"
+          className="text-indigo-600 hover:text-indigo-900 flex items-center"
+        >
           <span className="mr-2">Back to Category List</span>
         </NavLink>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 bg-white p-6 rounded-lg shadow-md"
+      >
         {/* Name */}
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Tên</label>
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Tên
+          </label>
           <input
             type="text"
             id="name"
-            {...register('name', { required: 'Tên là bắt buộc' })}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${errors.name ? 'border-red-500' : ''}`}
+            {...register("name", { required: "Tên là bắt buộc" })}
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm ${
+              errors.name ? "border-red-500" : ""
+            }`}
           />
-          {errors.name && typeof errors.name.message === 'string' && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+          {errors.name && typeof errors.name.message === "string" && (
+            <p className="text-red-500 text-sm">{errors.name.message}</p>
+          )}
         </div>
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Mô tả</label>
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Mô tả
+          </label>
           <textarea
             id="description"
-            {...register('description')}
+            {...register("description")}
             rows={4}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
@@ -121,7 +146,12 @@ const AddCategories = () => {
 
         {/* Image */}
         <div>
-          <label htmlFor="image" className="block text-sm font-medium text-gray-700">Ảnh</label>
+          <label
+            htmlFor="image"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Ảnh
+          </label>
           <input
             type="file"
             id="image"
@@ -131,21 +161,30 @@ const AddCategories = () => {
           />
           {imagePreview && (
             <div className="mt-2">
-              <img src={imagePreview} alt="Preview" className="h-40 w-auto rounded-md" />
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="h-40 w-auto rounded-md"
+              />
             </div>
           )}
         </div>
 
         {/* Status */}
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">Trạng thái</label>
+          <label
+            htmlFor="active"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Trạng thái
+          </label>
           <select
-            id="status"
-            {...register('status')}
+            id="active"
+            {...register("active")}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           >
-            <option value="Active">Hoạt động</option>
-            <option value="Inactive">Không hoạt động</option>
+            <option value={"true"}>Hoạt động</option>
+            <option value={"false"}>Không hoạt động</option>
           </select>
         </div>
 

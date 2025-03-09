@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import api from "../../api/api";
 import { Category, CategoryListResponse } from "../../types/category.types";
 import { Pagination } from "../../types/pagination.types";
+import { AxiosError } from "axios";
 
 interface CategoryState {
   categories: Category[];
@@ -24,15 +25,19 @@ export const fetchCategories = createAsyncThunk(
   async ({
     page = 1,
     search = "",
-    size  ,
+    size,
+    isActive = false,
   }: {
     page?: number;
     search?: string;
     size?: number;
+    isActive?: boolean;
   }) => {
     console.log("fetchCategories", page, search, size);
     const response = await api.get(
-      `/api/category?page=${page - 1}&search=${search}&size=${size}`
+      `/api/category?page=${
+        page - 1
+      }&search=${search}&size=${size}&isActive=${isActive}`
     );
     if (response.data.status === "error") {
       throw new Error(response.data.message);
@@ -43,37 +48,64 @@ export const fetchCategories = createAsyncThunk(
 
 export const addCategory = createAsyncThunk(
   "category/addCategory",
-  async (newCategory: Category) => {
-    const response = await api.post("/api/category", newCategory);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (newCategory: Category,{ rejectWithValue}) => {
+    try {
+      const response = await api.post("/api/category", newCategory);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Category;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Category;
   }
 );
 
 export const updateCategory = createAsyncThunk(
   "category/updateCategory",
-  async (updatedCategory: Category) => {
-    const response = await api.put(
-      `/api/category/${updatedCategory.id}`,
-      updatedCategory
-    );
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (updatedCategory: Category, { rejectWithValue }) => {
+    try {
+      const response = await api.put(
+        `/api/category/${updatedCategory.id}`,
+        updatedCategory
+      );
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Category;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Category;
   }
 );
 
 export const deleteCategory = createAsyncThunk(
   "category/deleteCategory",
-  async (categoryId: number) => {
-    const response = await api.delete(`/api/category/${categoryId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (categoryId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/api/category/${categoryId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return categoryId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return categoryId;
   }
 );
 
@@ -160,7 +192,6 @@ const categorySlice = createSlice({
       )
       .addCase(deleteCategory.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to delete category";
       })
       .addCase(fetchCategoryById.pending, (state) => {
         state.loading = true;

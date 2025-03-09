@@ -1,29 +1,40 @@
-import { Dialog, Transition } from '@headlessui/react';
-import { PencilSquareIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { debounce } from 'lodash';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { useDispatch, useSelector } from 'react-redux';
-import { NavLink } from 'react-router';
-import { deleteProduct, fetchProducts } from '../../../features/product/productSlice';
-import { AppDispatch, RootState } from '../../../store';
-import formatCurrencyVND from '../../../utils/formatMoney';
-import PaginationItem from '../PaginationItem';
+import { Dialog, Transition } from "@headlessui/react";
+import {
+  PencilSquareIcon,
+  TrashIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { debounce } from "lodash";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { NavLink } from "react-router";
+import {
+  deleteProduct,
+  fetchProducts,
+} from "../../../features/product/productSlice";
+import { AppDispatch, RootState } from "../../../store";
+import formatCurrencyVND from "../../../utils/formatMoney";
+import PaginationItem from "../PaginationItem";
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 const ListProduct = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { products, error, pagination } = useSelector((state: RootState) => state.products);
+  const { products, error, pagination } = useSelector(
+    (state: RootState) => state.products
+  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
-  const [searchName, setSearchName] = useState<string>('');
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null
+  );
+  const [searchName, setSearchName] = useState<string>("");
   const [pageSize, setPageSize] = useState<number>(5);
 
   useEffect(() => {
-    dispatch(fetchProducts({ page: 1, search: searchName }));
+    dispatch(fetchProducts({ page: 1, search: searchName, isActive: false }));
   }, [dispatch, pageSize]);
 
   const openDeleteModal = (id: number) => {
@@ -40,27 +51,27 @@ const ListProduct = () => {
     if (selectedProductId !== null) {
       try {
         await dispatch(deleteProduct(selectedProductId)).unwrap();
-        toast.success('Xóa sản phẩm thành công!');
+        toast.success("Xóa sản phẩm thành công!");
         closeDeleteModal();
-      } catch (error) {
+      } catch (error : any) {
         console.error(error);
-        toast.error('Xóa sản phẩm thất bại!');
+        toast.error(error);
       }
     }
   };
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchProducts({ page, search: searchName }));
+    dispatch(fetchProducts({ page, search: searchName, isActive: false }));
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(e.target.value);
     setPageSize(newSize);
-    dispatch(fetchProducts({ page: 1, search: searchName }));
+    dispatch(fetchProducts({ page: 1, search: searchName, isActive: false }));
   };
 
   const debouncedSearch = debounce((value: string) => {
-    dispatch(fetchProducts({ page: 1, search: value }));
+    dispatch(fetchProducts({ page: 1, search: value, isActive: false }));
   }, 300);
 
   const handleSearchName = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +95,10 @@ const ListProduct = () => {
 
       {/* Search by Name */}
       <div className="mb-6">
-        <label htmlFor="nameSearch" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="nameSearch"
+          className="block text-sm font-medium text-gray-700"
+        >
           Tìm kiếm theo tên
         </label>
         <input
@@ -137,33 +151,46 @@ const ListProduct = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {error ? (
               <tr>
-                <td colSpan={10} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td
+                  colSpan={10}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
                   {error}
                 </td>
               </tr>
             ) : products?.length > 0 ? (
               products.map((product) => (
                 <tr key={product.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.id}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {product.name}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{
-                    product.description.length > 25
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {product.description.length > 25
                       ? `${product.description.substring(0, 25)}...`
-                      : product.description
-                  }</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{formatCurrencyVND(product.price)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{formatCurrencyVND(product.salePrice ??0)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{product.stock}</td>
+                      : product.description}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {formatCurrencyVND(product.price)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {formatCurrencyVND(product.salePrice ?? 0)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {product.stock}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={classNames(
-                        product.status === 'Hoạt động' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
-                        'px-2 inline-flex text-xs leading-5 font-semibold rounded-full'
+                        product.active === true
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800",
+                        "px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                       )}
                     >
-                      {product.status}
+                      {product.active === true ? "Hoạt động" : "Khóa"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -174,7 +201,6 @@ const ListProduct = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-
                       <NavLink
                         to={`/admin/products/edit/${product.id}`}
                         className="text-indigo-600 hover:text-indigo-900"
@@ -195,7 +221,10 @@ const ListProduct = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={10} className="px-6 py-4 text-center text-sm text-gray-500">
+                <td
+                  colSpan={10}
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
                   Không tìm thấy sản phẩm nào.
                 </td>
               </tr>
@@ -252,12 +281,16 @@ const ListProduct = () => {
                   </div>
                   <div>
                     <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                      <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-lg font-medium leading-6 text-gray-900"
+                      >
                         Xóa sản phẩm
                       </Dialog.Title>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Bạn có chắc chắn muốn xóa sản phẩm này không? Hành động này không thể hoàn tác.
+                          Bạn có chắc chắn muốn xóa sản phẩm này không? Hành
+                          động này không thể hoàn tác.
                         </p>
                       </div>
                     </div>

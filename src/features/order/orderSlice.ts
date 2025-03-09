@@ -75,12 +75,21 @@ export const fetchOrderDetails = createAsyncThunk(
 
 export const addOrder = createAsyncThunk(
   "order/addOrder",
-  async (newOrder: OrderRequest) => {
-    const response = await api.post("/api/orders", newOrder);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (newOrder: OrderRequest, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/api/orders", newOrder);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Order;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Order;
   }
 );
 
@@ -119,12 +128,21 @@ export const fetchOrders = createAsyncThunk(
 
 export const deleteOrder = createAsyncThunk(
   "order/deleteOrder",
-  async (orderId: number) => {
-    const response = await api.delete(`/api/orders/${orderId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (orderId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/api/orders/${orderId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return orderId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return orderId;
   }
 );
 

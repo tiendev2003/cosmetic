@@ -22,10 +22,14 @@ export interface ProductDetailPage2Props {
   className?: string;
 }
 
-const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => {
+const ProductDetailPage2: FC<ProductDetailPage2Props> = ({
+  className = "",
+}) => {
   const { id } = useParams<{ id: string }>();
   const dispatch: AppDispatch = useDispatch();
-  const { product, loading, error } = useSelector((state: RootState) => state.products);
+  const { product, loading, error } = useSelector(
+    (state: RootState) => state.products
+  );
 
   useEffect(() => {
     if (id) {
@@ -35,7 +39,8 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
 
   const [qualitySelected, setQualitySelected] = useState(1);
   const [isOpen, setIsOpen] = useState(false);
-  const [isOpenModalViewAllReviews, setIsOpenModalViewAllReviews] = useState(false);
+  const [isOpenModalViewAllReviews, setIsOpenModalViewAllReviews] =
+    useState(false);
   const [openFocusIndex, setOpenFocusIndex] = useState(0);
 
   const handleOpenModal = (index: number) => {
@@ -58,13 +63,12 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
 
   const handleAddToCart = async () => {
     try {
-
-      await dispatch(addCartItem(
-        {
+      await dispatch(
+        addCartItem({
           productId: product.id,
-          quantity: qualitySelected
-        }
-      )).unwrap();
+          quantity: qualitySelected,
+        })
+      ).unwrap();
 
       toast.custom(
         (t) => (
@@ -88,12 +92,10 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
         ),
         { position: "top-right", id: "nc-product-notify", duration: 3000 }
       );
-    } catch (error) {
-      console.log(error);
-      toast.error("Thêm giỏ hàng thất bại");
-
+    } catch (error: any) {
+      toast.error(error as string);
     }
-  }
+  };
   const renderProductCartOnNotify = () => {
     return (
       <div className="flex ">
@@ -109,19 +111,27 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
           <div>
             <div className="flex justify-between ">
               <div>
-                <h3 className="text-base font-medium ">{product?.name || "Product Name"}</h3>
+                <h3 className="text-base font-medium ">
+                  {product?.name || "Product Name"}
+                </h3>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                   <span>
-                    {product?.brand?.name || "Brand"} - {product?.category?.name || "Category"}
+                    {product?.brand?.name || "Brand"} -{" "}
+                    {product?.category?.name || "Category"}
                   </span>
                   <span className="mx-2 border-l border-slate-200 dark:border-slate-700 h-4"></span>
                 </p>
               </div>
-              <Prices price={(product?.salePrice || product?.price) * qualitySelected} className="mt-0.5" />
+              <Prices
+                price={(product?.salePrice || product?.price) * qualitySelected}
+                className="mt-0.5"
+              />
             </div>
           </div>
           <div className="flex flex-1 items-end justify-between text-sm">
-            <p className="text-gray-500 dark:text-slate-400">Qty {qualitySelected}</p>
+            <p className="text-gray-500 dark:text-slate-400">
+              Qty {qualitySelected}
+            </p>
 
             <div className="flex">
               <Link
@@ -138,30 +148,46 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
   };
   const renderSectionSidebar = () => {
     const reviewsCount = product?.reviews?.length || 0;
-    const averageRating = reviewsCount > 0
-      ? product.reviews.reduce((acc, review) => acc + review.star, 0) / reviewsCount
-      : 0;
+    const averageRating =
+      reviewsCount > 0
+        ? product.reviews.reduce((acc, review) => acc + review.star, 0) /
+          reviewsCount
+        : 0;
 
     return (
       <div className="listingSectionSidebar__wrap lg:shadow-lg">
         <div className="space-y-7 lg:space-y-8">
           <div className="flex items-center justify-between space-x-5">
-            <div className="flex text-2xl font-semibold">{formatCurrencyVND(product.salePrice || product.price)}</div>
-            <a href="#reviews" className="flex items-center text-sm font-medium">
+            <div className="flex text-2xl font-semibold">
+              {formatCurrencyVND(product.salePrice || product.price)}
+            </div>
+            <a
+              href="#reviews"
+              className="flex items-center text-sm font-medium"
+            >
               <StarIcon className="w-5 h-5 pb-[1px] text-orange-400" />
               <span className="ml-1.5 flex">
                 <span>{averageRating.toFixed(1)}</span>
 
                 <span className="mx-1.5">·</span>
-                <span className="text-slate-700 dark:text-slate-400 underline">{`${product?.reviews?.length || 0} đánh giá`}</span>
+                <span className="text-slate-700 dark:text-slate-400 underline">{`${
+                  product?.reviews?.length || 0
+                } đánh giá`}</span>
               </span>
             </a>
           </div>
           <div className="flex space-x-3.5">
             <div className="flex items-center justify-center bg-slate-100/70 dark:bg-slate-800/70 px-2 py-3 sm:p-3.5 rounded-full">
-              <NcInputNumber defaultValue={qualitySelected} onChange={setQualitySelected} />
+              <NcInputNumber
+                defaultValue={qualitySelected}
+                onChange={setQualitySelected}
+              />
             </div>
-            <ButtonPrimary className="flex-1 flex-shrink-0" type="button" onClick={handleAddToCart}>
+            <ButtonPrimary
+              className="flex-1 flex-shrink-0"
+              type="button"
+              onClick={handleAddToCart}
+            >
               <span className="ml-3">Add to cart</span>
             </ButtonPrimary>
           </div>
@@ -169,18 +195,23 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
             <div className="space-y-2.5">
               <div className="flex justify-between text-slate-600 dark:text-slate-300">
                 <span className="flex">
-                  <span>{`${formatCurrencyVND(product.salePrice || product.price)}`}</span>
+                  <span>{`${formatCurrencyVND(
+                    product.salePrice || product.price
+                  )}`}</span>
                   <span className="mx-2">x</span>
                   <span>{`${qualitySelected} `}</span>
                 </span>
-                <span>{`${formatCurrencyVND((product.salePrice || product.price) * qualitySelected)}`}</span>
+                <span>{`${formatCurrencyVND(
+                  (product.salePrice || product.price) * qualitySelected
+                )}`}</span>
               </div>
-
             </div>
             <div className="border-b border-slate-200 dark:border-slate-700"></div>
             <div className="flex justify-between font-semibold">
               <span>Total</span>
-              <span>{`${formatCurrencyVND((product.salePrice || product.price) * qualitySelected)}`}</span>
+              <span>{`${formatCurrencyVND(
+                (product.salePrice || product.price) * qualitySelected
+              )}`}</span>
             </div>
           </div>
         </div>
@@ -190,29 +221,34 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
 
   const renderSection1 = () => {
     const reviewsCount = product?.reviews?.length || 0;
-    const averageRating = reviewsCount > 0
-      ? product.reviews.reduce((acc, review) => acc + review.star, 0) / reviewsCount
-      : 0;
+    const averageRating =
+      reviewsCount > 0
+        ? product.reviews.reduce((acc, review) => acc + review.star, 0) /
+          reviewsCount
+        : 0;
     return (
       <div className="listingSection__wrap !space-y-6">
         <div>
           <h2 className="text-2xl md:text-3xl font-semibold">{product.name}</h2>
           <div className="flex items-center mt-4 sm:mt-5">
-            <a href="#reviews" className="hidden sm:flex items-center text-sm font-medium">
+            <a
+              href="#reviews"
+              className="hidden sm:flex items-center text-sm font-medium"
+            >
               <StarIcon className="w-5 h-5 pb-[1px] text-slate-800 dark:text-slate-200" />
               <span className="ml-1.5">
                 <span>{averageRating.toFixed(1)}</span>
 
                 <span className="mx-1.5">·</span>
-                <span className="text-slate-700 dark:text-slate-400 underline">{`${product?.reviews?.length || 0} đánh giá`}</span>
+                <span className="text-slate-700 dark:text-slate-400 underline">{`${
+                  product?.reviews?.length || 0
+                } đánh giá`}</span>
               </span>
             </a>
             <span className="hidden sm:block mx-2.5">·</span>
-
           </div>
         </div>
         <div className="block lg:hidden">{renderSectionSidebar()}</div>
-        <div className="w-14 border-b border-neutral-200 dark:border-neutral-700"></div>
         <AccordionInfo
           data={[
             {
@@ -233,26 +269,21 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
     );
   };
 
-
   const renderReviews = () => {
-
-
     return (
       <div id="reviews" className="scroll-mt-[150px]">
-
         <h2 className="text-2xl font-semibold flex items-center">
           <StarIcon className="w-7 h-7 mb-0.5" />
-          <span className="ml-1.5"> {`${product?.reviews?.length ?? 0} đánh giá`}</span>
+          <span className="ml-1.5">
+            {" "}
+            {`${product?.reviews?.length ?? 0} đánh giá`}
+          </span>
         </h2>
         <div className="mt-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-11 gap-x-28">
             {product.reviews.map((review, index) => (
-              <ReviewItem
-                key={index}
-                data={review}
-              />
+              <ReviewItem key={index} data={review} />
             ))}
-
           </div>
           <ButtonSecondary
             onClick={() => setIsOpenModalViewAllReviews(true)}
@@ -266,7 +297,10 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
   };
 
   return (
-    <div className={`ListingDetailPage nc-ProductDetailPage2 ${className}`} data-nc-id="ProductDetailPage2">
+    <div
+      className={`ListingDetailPage nc-ProductDetailPage2 ${className}`}
+      data-nc-id="ProductDetailPage2"
+    >
       <header className="container mt-8 sm:mt-10">
         <div className="relative">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-6">
@@ -280,25 +314,25 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
               />
               <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-40 transition-opacity"></div>
             </div>
-            {
-              product?.productImages[1]?.image && (
-                <div
-                  className="col-span-1 row-span-2 relative rounded-md sm:rounded-xl overflow-hidden cursor-pointer"
-                  onClick={() => handleOpenModal(1)}
-                >
-                  <img
-                    className="object-container w-full h-fulll rounded-md sm:rounded-xl"
-                    src={product?.productImages[1]?.image}
-                  />
-                  <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-40 transition-opacity"></div>
-                </div>
-              )
-            }
+            {product?.productImages[1]?.image && (
+              <div
+                className="col-span-1 row-span-2 relative rounded-md sm:rounded-xl overflow-hidden cursor-pointer"
+                onClick={() => handleOpenModal(1)}
+              >
+                <img
+                  className="object-container w-full h-fulll rounded-md sm:rounded-xl"
+                  src={product?.productImages[1]?.image}
+                />
+                <div className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 hover:opacity-40 transition-opacity"></div>
+              </div>
+            )}
 
             {product?.productImages?.slice(2).map((item, index) => (
               <div
                 key={index}
-                className={`relative rounded-md sm:rounded-xl overflow-hidden ${index >= 2 ? "block" : ""}`}
+                className={`relative rounded-md sm:rounded-xl overflow-hidden ${
+                  index >= 2 ? "block" : ""
+                }`}
               >
                 <NcImage
                   containerClassName="aspect-w-6 aspect-h-5 lg:aspect-h-4"
@@ -316,7 +350,13 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
             className="absolute hidden md:flex md:items-center md:justify-center left-3 bottom-3 px-4 py-2 rounded-xl bg-white text-slate-500 cursor-pointer hover:bg-slate-200 z-10"
             onClick={() => handleOpenModal(0)}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -324,7 +364,9 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
                 d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
               />
             </svg>
-            <span className="ml-2 text-neutral-800 text-sm font-medium">Show all photos</span>
+            <span className="ml-2 text-neutral-800 text-sm font-medium">
+              Show all photos
+            </span>
           </div>
         </div>
       </header>
@@ -340,7 +382,9 @@ const ProductDetailPage2: FC<ProductDetailPage2Props> = ({ className = "" }) => 
           {renderSection1()}
         </div>
         <div className="flex-grow">
-          <div className="hidden lg:block sticky top-28">{renderSectionSidebar()}</div>
+          <div className="hidden lg:block sticky top-28">
+            {renderSectionSidebar()}
+          </div>
         </div>
       </main>
       <div className="container pb-24 lg:pb-28 pt-14 space-y-14">

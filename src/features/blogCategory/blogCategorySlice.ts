@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import api from "../../api/api";
 import { BlogCategory, BlogCategoryCount } from "../../types/blogCategory.types";
 import { Pagination } from "../../types/pagination.types";
+import { AxiosError } from "axios";
 
 interface BlogCategoryState {
   categories: BlogCategory[];
@@ -44,37 +45,64 @@ export const fetchBlogCategories = createAsyncThunk(
 
 export const addBlogCategory = createAsyncThunk(
   "blogCategory/addBlogCategory",
-  async (newCategory: BlogCategory) => {
-    const response = await api.post("/api/blog-category", newCategory);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (newCategory: BlogCategory,{ rejectWithValue}) => {
+    try {
+      const response = await api.post("/api/blog-category", newCategory);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as BlogCategory;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as BlogCategory;
   }
 );
 
 export const updateBlogCategory = createAsyncThunk(
   "blogCategory/updateBlogCategory",
-  async (updatedCategory: BlogCategory) => {
-    const response = await api.put(
-      `/api/blog-category/${updatedCategory.id}`,
-      updatedCategory
-    );
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (updatedCategory: BlogCategory,{ rejectWithValue}) => {
+    try {
+      const response = await api.put(
+        `/api/blog-category/${updatedCategory.id}`,
+        updatedCategory
+      );
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as BlogCategory;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as BlogCategory;
   }
 );
 
 export const deleteBlogCategory = createAsyncThunk(
   "blogCategory/deleteBlogCategory",
-  async (categoryId: number) => {
-    const response = await api.delete(`/api/blog-category/${categoryId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (categoryId: number,{ rejectWithValue}) => {
+    try {
+      const response = await api.delete(`/api/blog-category/${categoryId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return categoryId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return categoryId;
   }
 );
 
@@ -178,7 +206,7 @@ const blogCategorySlice = createSlice({
       )
       .addCase(deleteBlogCategory.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to delete blog category";
+       
       })
       .addCase(fetchBlogCategoryById.pending, (state) => {
         state.loading = true;

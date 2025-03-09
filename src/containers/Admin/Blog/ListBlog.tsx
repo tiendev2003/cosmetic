@@ -42,9 +42,9 @@ const ListBlog = () => {
         toast.success('Deleted blog successfully!');
         closeDeleteModal();
 
-      } catch (error) {
+      } catch (error:any) {
         console.error(error);
-        toast.error('Failed to delete blog!');
+        toast.error(error);
       }
     }
   };

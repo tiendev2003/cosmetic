@@ -20,17 +20,18 @@ const CheckoutPage = () => {
     "ContactInfo" | "ShippingAddress" | "PaymentMethod"
   >("ShippingAddress");
 
-  const { cart, } = useSelector((state: RootState) => state.carts)
-  const dispatch: AppDispatch = useDispatch()
+  const { cart } = useSelector((state: RootState) => state.carts);
+  const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const [discount, setDiscount] = useState<number>(0);
   const [discountCode, setDiscountCode] = useState<string>("");
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>("");
 
   useEffect(() => {
-    dispatch(fetchCart())
-  }, [dispatch])
+    dispatch(fetchCart());
+  }, [dispatch]);
   const handleScrollToEl = (id: string) => {
     const element = document.getElementById(id);
     setTimeout(() => {
@@ -41,11 +42,10 @@ const CheckoutPage = () => {
   const handleApplyDiscount = async () => {
     try {
       const dt = await dispatch(applyDiscount(discountCode)).unwrap();
-      console.log(dt)
       setDiscount(dt);
     } catch (error) {
-      console.log(error)
-      toast.error("Mã giảm giá không hợp lệ")
+      console.log(error);
+      toast.error("Mã giảm giá không hợp lệ");
     }
   };
 
@@ -62,18 +62,26 @@ const CheckoutPage = () => {
     const orderData: OrderRequest = {
       username: "username",
       paymentMethod: selectedPaymentMethod,
-      orderItems: cart?.cartItems.map((item: CartItem) => {
-        return {
-          productId: item.product.id,
-          quantity: item.quantity,
-          price: item.unitPrice,
-        };
-      }) || [],
-      totalAmount: cart?.cartItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0) ?? 0,
+      discountCode: discountCode,
+      orderItems:
+        cart?.cartItems.map((item: CartItem) => {
+          return {
+            productId: item.product.id,
+            quantity: item.quantity,
+            price: item.unitPrice,
+          };
+        }) || [],
+      totalAmount:
+        cart?.cartItems.reduce(
+          (total, item) => total + item.unitPrice * item.quantity,
+          0
+        ) ?? 0,
       discountAmount: discount,
-      finalAmount: (cart?.cartItems ?? []).reduce(
-        (total, item) => total + item.unitPrice * item.quantity, 0
-      ) -
+      finalAmount:
+        (cart?.cartItems ?? []).reduce(
+          (total, item) => total + item.unitPrice * item.quantity,
+          0
+        ) -
         discount +
         25000,
       address: selectedAddress.id,
@@ -81,27 +89,27 @@ const CheckoutPage = () => {
     try {
       const res = await dispatch(addOrder(orderData)).unwrap();
       if (orderData.paymentMethod === "COD") {
-        navigate("/account-my-order"); await dispatch(fetchCart()).unwrap();
-        toast.success("Đặt hàng thành công")
+        navigate("/account-my-order");
+        await dispatch(fetchCart()).unwrap();
+        toast.success("Đặt hàng thành công");
         await dispatch(fetchCart()).unwrap();
         return;
       } else {
-        const url = await dispatch(fetchUrlMomo(
-          {
+        const url = await dispatch(
+          fetchUrlMomo({
             orderId: res.orderId.toString(),
             total: orderData.finalAmount,
-          }
-        )).unwrap();
-        toast.success("Đặt hàng thành công")
+          })
+        ).unwrap();
+        toast.success("Đặt hàng thành công");
 
         window.open(url, "_blank", "noopener,noreferrer");
 
         await dispatch(fetchCart()).unwrap();
       }
-
     } catch (error) {
-      console.log(error)
-      toast.error("Đặt hàng không thành công")
+      console.log(error);
+      toast.error("Đặt hàng không thành công");
     }
   };
 
@@ -208,8 +216,6 @@ const CheckoutPage = () => {
                     <span>{product?.category?.name}</span>
                   </div>
                 </div>
-
-
               </div>
 
               <div className="hidden flex-1 sm:flex justify-end">
@@ -222,8 +228,6 @@ const CheckoutPage = () => {
             <div className="hidden sm:block text-center relative">
               {`Qty ${quantity}`}
             </div>
-
-
           </div>
         </div>
       </div>
@@ -237,7 +241,7 @@ const CheckoutPage = () => {
           <ShippingAddress
             isActive={tabActive === "ShippingAddress"}
             onOpenActive={() => {
-              navigate("/account-address")
+              navigate("/account-address");
             }}
             onCloseActive={() => {
               setTabActive("PaymentMethod");
@@ -264,9 +268,7 @@ const CheckoutPage = () => {
 
   return (
     <div className="nc-CheckoutPage">
-
       <title>Checkout || fashionFactory Ecommerce Template</title>
-
 
       <main className="container py-16 lg:pb-28 lg:pt-20 ">
         <div className="mb-16">
@@ -290,11 +292,15 @@ const CheckoutPage = () => {
           <div className="w-full lg:w-[36%] ">
             <h3 className="text-lg font-semibold">Thông tin đơn hàng</h3>
             <div className="mt-8 divide-y divide-slate-200/70 dark:divide-slate-700 ">
-              {
-                cart && cart?.cartItems?.length > 0 ? cart?.cartItems.map((item, index) => renderProduct(item, index)) : <div className="flex items-center justify-center   ">
-                  <div className="text-red-500">Bạn chưa có sản phẩm nào cả</div>
+              {cart && cart?.cartItems?.length > 0 ? (
+                cart?.cartItems.map((item, index) => renderProduct(item, index))
+              ) : (
+                <div className="flex items-center justify-center   ">
+                  <div className="text-red-500">
+                    Bạn chưa có sản phẩm nào cả
+                  </div>
                 </div>
-              }
+              )}
             </div>
 
             <div className="mt-10 pt-6 text-sm text-slate-500 dark:text-slate-400 border-t border-slate-200/70 dark:border-slate-700 ">
@@ -320,25 +326,24 @@ const CheckoutPage = () => {
               <div className="mt-4 flex justify-between py-2.5">
                 <span>Tổng tiền</span>
                 <span className="font-semibold text-slate-900 dark:text-slate-200">
-                  {
-                    formatCurrencyVND(cart?.cartItems?.reduce((total, item) => total + item.unitPrice * item.quantity, 0) ?? 0)
-
-                  }
+                  {formatCurrencyVND(
+                    cart?.cartItems?.reduce(
+                      (total, item) => total + item.unitPrice * item.quantity,
+                      0
+                    ) ?? 0
+                  )}
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span>Phí ship</span>
                 <span className="font-semibold text-slate-900 dark:text-slate-200">
                   {formatCurrencyVND(25000)}
-
                 </span>
               </div>
               <div className="flex justify-between py-2.5">
                 <span>Giảm giá</span>
                 <span className="font-semibold text-red-600 dark:text-slate-200">
-                  - {formatCurrencyVND(
-                    discount
-                  )}
+                  - {formatCurrencyVND(discount)}
                 </span>
               </div>
               <div className="flex justify-between font-semibold text-slate-900 dark:text-slate-200 text-base pt-4">
@@ -349,8 +354,8 @@ const CheckoutPage = () => {
                       (total, item) => total + item.unitPrice * item.quantity,
                       0
                     ) -
-                    discount +
-                    25000
+                      discount +
+                      25000
                   )}
                 </span>
               </div>
@@ -358,7 +363,6 @@ const CheckoutPage = () => {
             <ButtonPrimary onClick={handleConfirmOrder} className="mt-8 w-full">
               Xác nhận
             </ButtonPrimary>
-
           </div>
         </div>
       </main>

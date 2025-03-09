@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import api from "../../api/api";
 import { Address } from "../../types/address.types";
+import { AxiosError } from "axios";
 
 interface AddressState {
   addresses: Address[];
@@ -29,70 +30,124 @@ export const fetchAddresses = createAsyncThunk(
 
 export const addAddress = createAsyncThunk(
   "address/addAddress",
-  async (newAddress: Address) => {
-    const response = await api.post("/api/address", newAddress);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (newAddress: Address, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/api/address", newAddress);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Address;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Address;
   }
 );
 
 export const updateAddress = createAsyncThunk(
   "address/updateAddress",
-  async (updatedAddress: Address) => {
-    const response = await api.put(
-      `/api/address/${updatedAddress.id}`,
-      updatedAddress
-    );
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (updatedAddress: Address, { rejectWithValue }) => {
+    try {
+      const response = await api.put(
+        `/api/address/${updatedAddress.id}`,
+        updatedAddress
+      );
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Address;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Address;
   }
 );
 
 export const deleteAddress = createAsyncThunk(
   "address/deleteAddress",
-  async (addressId: number) => {
-    const response = await api.delete(`/api/address/${addressId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (addressId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/api/address/${addressId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return addressId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return addressId;
   }
 );
 
 export const fetchAddressById = createAsyncThunk(
   "address/fetchAddressById",
-  async (addressId: number) => {
-    const response = await api.get(`/api/address/${addressId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (addressId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/address/${addressId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Address;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Address;
   }
 );
 
 export const setDefaultAddress = createAsyncThunk(
   "address/setDefaultAddress",
-  async (addressId: number) => {
-    const response = await api.put(`/api/address/${addressId}/default`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (addressId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/api/address/${addressId}/default`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return addressId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return addressId;
   }
 );
 
-export const getAddressDefault= createAsyncThunk(
+export const getAddressDefault = createAsyncThunk(
   "address/getAddressDefault",
-  async () => {
-    const response = await api.get(`/api/address/default`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/address/default`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Address;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Address;
   }
 );
 

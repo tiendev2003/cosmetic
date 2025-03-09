@@ -5,7 +5,7 @@ export interface Category {
   name: string;
   description: string;
   image: string;
-  status: string; // Mặc định "0"
+  active: boolean;
   createdDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
   updatedDate: string; // LocalDateTime ánh xạ thành string do định dạng JSON
 }
@@ -17,4 +17,11 @@ export interface CategoryListResponse {
   message: string;
   data: Category[];
   pagination: Pagination;
+}
+
+export interface CategoryRequest {
+  name: string;
+  description: string;
+  image: string;
+  active: boolean;
 }

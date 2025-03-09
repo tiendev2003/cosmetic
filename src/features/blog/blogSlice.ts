@@ -24,67 +24,118 @@ const initialState: BlogState = {
 
 export const fetchBlogs = createAsyncThunk(
   "blog/fetchBlogs",
-  async ({
-    page = 1,
-    search = "",
-    size = 5,
-  }: {
-    page?: number;
-    search?: string;
-    size?: number;
-  }) => {
-    const response = await api.get(
-      `/api/blog?page=${page - 1}&search=${search}&size=${size}`
-    );
-    console.log(response.data);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (
+    {
+      page = 1,
+      search = "",
+      size = 5,
+    }: {
+      page?: number;
+      search?: string;
+      size?: number;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.get(
+        `/api/blog?page=${page - 1}&search=${search}&size=${size}`
+      );
+      console.log(response.data);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data as { data: Blog[]; pagination: Pagination };
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data as { data: Blog[]; pagination: Pagination };
   }
 );
 
 export const addBlog = createAsyncThunk(
   "blog/addBlog",
-  async (newBlog: BlogRequest) => {
-    const response = await api.post("/api/blog", newBlog);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (newBlog: BlogRequest, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/api/blog", newBlog);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Blog;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Blog;
   }
 );
 
 export const updateBlog = createAsyncThunk(
   "blog/updateBlog",
-  async (updatedBlog: BlogRequest) => {
-    const response = await api.put(`/api/blog/${updatedBlog.id}`, updatedBlog);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (updatedBlog: BlogRequest, { rejectWithValue }) => {
+    try {
+      const response = await api.put(
+        `/api/blog/${updatedBlog.id}`,
+        updatedBlog
+      );
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Blog;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Blog;
   }
 );
 
 export const deleteBlog = createAsyncThunk(
   "blog/deleteBlog",
-  async (blogId: number) => {
-    const response = await api.delete(`/api/blog/${blogId}`);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (blogId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`/api/blog/${blogId}`);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return blogId;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return blogId;
   }
 );
 export const fetchBlogById = createAsyncThunk(
   "blog/fetchBlogById",
-  async (blogId: number) => {
-    const response = await api.get(`/api/blog/${blogId}`);
-    console.log("loading blog" ,response.data);
-    if (response.data.status === "error") {
-      throw new Error(response.data.message);
+  async (blogId: number, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/blog/${blogId}`);
+      console.log("loading blog", response.data);
+      if (response.data.status === "error") {
+        throw new Error(response.data.message);
+      }
+      return response.data.data as Blog;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data.message ||
+          axiosError.message ||
+          "An error occurred"
+      );
     }
-    return response.data.data as Blog;
   }
 );
 
@@ -173,8 +224,7 @@ const blogSlice = createSlice({
       })
       .addCase(deleteBlog.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || "Failed to delete blog";
-      })
+       })
       .addCase(fetchBlogById.pending, (state) => {
         state.loading = true;
         state.error = null;
