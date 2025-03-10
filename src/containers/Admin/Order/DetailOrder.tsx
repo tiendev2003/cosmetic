@@ -410,13 +410,10 @@ const DetailOrder = () => {
                     <p className="text-sm text-gray-500">Giảm giá:</p>
                     <p className="text-sm font-medium text-red-600">-{formatCurrencyVND(order.discountAmount)}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <p className="text-sm text-gray-500">Phí vận chuyển:</p>
-                    <p className="text-sm font-medium">{formatCurrencyVND(25000)}</p>
-                  </div>
+
                   <div className="pt-3 border-t border-gray-200 flex justify-between">
                     <p className="text-base font-medium">Tổng thanh toán:</p>
-                    <p className="text-base font-bold text-blue-600">{formatCurrencyVND(order.finalAmount ?? order.totalAmount + 25000)}</p>
+                    <p className="text-base font-bold text-blue-600">{formatCurrencyVND(order.finalAmount ?? order.totalAmount)}</p>
                   </div>
                 </div>
               </div>

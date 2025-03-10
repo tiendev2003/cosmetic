@@ -43,7 +43,7 @@ const CheckoutPage = () => {
     try {
       const dt = await dispatch(applyDiscount(discountCode)).unwrap();
       setDiscount(dt);
-      
+
     } catch (error) {
       console.log(error);
       toast.error("Mã giảm giá không hợp lệ");
@@ -83,8 +83,7 @@ const CheckoutPage = () => {
           (total, item) => total + item.unitPrice * item.quantity,
           0
         ) -
-        discount +
-        25000,
+        discount,
       address: selectedAddress.id,
     };
     try {
@@ -336,12 +335,7 @@ const CheckoutPage = () => {
                   )}
                 </span>
               </div>
-              <div className="flex justify-between py-2.5">
-                <span>Phí ship</span>
-                <span className="font-semibold text-slate-900 dark:text-slate-200">
-                  {formatCurrencyVND(25000)}
-                </span>
-              </div>
+
               <div className="flex justify-between py-2.5">
                 <span>Giảm giá</span>
                 <span className="font-semibold text-red-600 dark:text-slate-200">
@@ -356,8 +350,7 @@ const CheckoutPage = () => {
                       (total, item) => total + item.unitPrice * item.quantity,
                       0
                     ) -
-                      discount +
-                      25000
+                    discount  
                   )}
                 </span>
               </div>

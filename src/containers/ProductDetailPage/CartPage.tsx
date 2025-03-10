@@ -13,7 +13,7 @@ import formatCurrencyVND from "../../utils/formatMoney";
 
 const CartPage = () => {
 
-  const { cart,  error } = useSelector((state: RootState) => state.carts)
+  const { cart, error } = useSelector((state: RootState) => state.carts)
   const dispatch: AppDispatch = useDispatch()
   useEffect(() => {
     dispatch(fetchCart())
@@ -279,17 +279,12 @@ const CartPage = () => {
                     }
                   </span>
                 </div>
-                <div className="flex justify-between py-4">
-                  <span>Phí ship</span>
-                  <span className="font-semibold text-slate-900 dark:text-slate-200">
-                    {formatCurrencyVND(25000)}
-                  </span>
-                </div>
+
 
                 <div className="flex justify-between font-semibold text-slate-900 dark:text-slate-200 text-base pt-4">
                   <span>Order total</span>
                   <span>{
-                    formatCurrencyVND(cart?.cartItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0) + 25000)
+                    formatCurrencyVND(cart?.cartItems.reduce((total, item) => total + item.unitPrice * item.quantity, 0) )
                   }</span>
                 </div>
               </div>

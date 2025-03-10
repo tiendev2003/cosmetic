@@ -18,7 +18,7 @@ function classNames(...classes: string[]) {
 
 const ListOrder = () => {
   const dispatch: AppDispatch = useDispatch();
-  const { orders,  error, pagination } = useSelector((state: RootState) => state.orders);
+  const { orders, error, pagination } = useSelector((state: RootState) => state.orders);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [searchOrderId, setSearchOrderId] = useState<string>('');
@@ -163,7 +163,7 @@ const ListOrder = () => {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{order.user.username}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatCurrencyVND(order.finalAmount +25000)}
+                    {formatCurrencyVND(order.finalAmount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {formatDate(order.orderDate)}

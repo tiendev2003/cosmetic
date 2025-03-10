@@ -17,7 +17,7 @@ import formatCurrencyVND from "../../utils/formatMoney";
 import CommonLayout from "./CommonLayout";
 const AccountOrderDetail = () => {
     const { id } = useParams<{ id: string }>();
-    const { orderDetails: order,   error } = useSelector((state: RootState) => state.orders);
+    const { orderDetails: order, error } = useSelector((state: RootState) => state.orders);
     const dispatch: AppDispatch = useDispatch();
     const navigate = useNavigate();
     useEffect(() => {
@@ -47,7 +47,7 @@ const AccountOrderDetail = () => {
         navigate(`/account-my-order/review/${productId}?orderId=${order?.id}`);
     }
 
-   
+
     if (error) {
         return <div className="px-6 py-4 text-center text-sm text-gray-500">{error}</div>;
     }
@@ -55,7 +55,7 @@ const AccountOrderDetail = () => {
         return <div className="px-6 py-4 text-center text-sm text-gray-500">Không tìm thấy đơn hàng</div>;
     }
     const renderProductItem = (cartItem: CartItem, index: number) => {
-        const { product, quantity, unitPrice, id  } = cartItem;
+        const { product, quantity, unitPrice, id } = cartItem;
         const canReview = order.status === OrderStatus.DELIVERED
         console.log("canReview", product)
         return (
@@ -245,13 +245,9 @@ const AccountOrderDetail = () => {
                                         <p className="text-sm text-gray-500">Giảm giá:</p>
                                         <p className="text-sm font-medium text-red-600">-{formatCurrencyVND(order.discountAmount)}</p>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <p className="text-sm text-gray-500">Phí vận chuyển:</p>
-                                        <p className="text-sm font-medium">{formatCurrencyVND(25000)}</p>
-                                    </div>
                                     <div className="pt-3 border-t border-gray-200 flex justify-between">
                                         <p className="text-base font-medium">Tổng thanh toán:</p>
-                                        <p className="text-base font-bold text-blue-600">{formatCurrencyVND(order.finalAmount ?? order.totalAmount + 25000)}</p>
+                                        <p className="text-base font-bold text-blue-600">{formatCurrencyVND(order.finalAmount ?? order.totalAmount)}</p>
                                     </div>
                                 </div>
                             </div>
