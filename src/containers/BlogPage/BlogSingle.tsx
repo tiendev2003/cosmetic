@@ -56,6 +56,7 @@ const BlogSingle = () => {
               <Avatar
                 containerClassName="flex-shrink-0"
                 sizeClass="w-8 h-8 sm:h-11 sm:w-11 "
+                imgUrl={blog?.author?.avatar}
               />
               <div className="ml-3">
                 <div className="flex items-center">

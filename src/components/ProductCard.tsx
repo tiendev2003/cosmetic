@@ -90,7 +90,7 @@ const ProductCard: FC<ProductCardProps> = ({
                   <span className="mx-2 border-l border-slate-200 dark:border-slate-700 h-4"></span>
                 </p>
               </div>
-              <Prices price={product?.price} className="mt-0.5" />
+              <Prices price={product?.salePrice ?? product?.price} className="mt-0.5" />
             </div>
           </div>
           <div className="flex flex-1 items-end justify-between text-sm">

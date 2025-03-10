@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Link } from "react-router";
 import PostCardMeta from "../../components/PostCardMeta/PostCardMeta";
-import { _getImgRd, _getTitleRd } from "../../contains/fakeData";
+import { _getTitleRd } from "../../contains/fakeData";
 import NcImage from "../../shared/NcImage/NcImage";
 import { Blog } from "../../types";
 
@@ -45,7 +45,7 @@ const Card13: FC<Card13Props> = ({ className = "", blog }) => {
         className={`block relative h-full flex-shrink-0 w-2/5 sm:w-1/3 ml-3 sm:ml-5`}
       >
         <NcImage
-          src={blog.image || _getImgRd()}
+          src={blog.image  }
           containerClassName="absolute inset-0 "
           className="object-cover w-full h-full rounded-xl sm:rounded-3xl"
         />

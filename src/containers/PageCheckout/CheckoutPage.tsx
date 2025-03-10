@@ -43,6 +43,7 @@ const CheckoutPage = () => {
     try {
       const dt = await dispatch(applyDiscount(discountCode)).unwrap();
       setDiscount(dt);
+      
     } catch (error) {
       console.log(error);
       toast.error("Mã giảm giá không hợp lệ");
@@ -87,6 +88,7 @@ const CheckoutPage = () => {
       address: selectedAddress.id,
     };
     try {
+      console.log(orderData)
       const res = await dispatch(addOrder(orderData)).unwrap();
       if (orderData.paymentMethod === "COD") {
         navigate("/account-my-order");

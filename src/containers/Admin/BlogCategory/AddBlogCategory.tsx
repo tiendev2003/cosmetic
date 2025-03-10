@@ -53,7 +53,7 @@ const AddBlogCategory = () => {
         await dispatch(addBlogCategory(newBlogCategory)).unwrap();
         toast.success("Thêm danh mục blog thành công");
       }
-      navigate("/admin/blog-category");
+      navigate("/admin/blog-categories");
     } catch (error: any) {
       toast.error(error);
     }

@@ -1,14 +1,13 @@
 import { Popover, Transition } from "@headlessui/react";
 import { Fragment, useContext } from "react";
 import { Link } from "react-router";
-import { avatarImgs } from "../../contains/fakeData";
 import { AuthContext, AuthContextType } from "../../context/AuthContext";
 import Avatar from "../../shared/Avatar/Avatar";
 import SwitchDarkMode2 from "../../shared/SwitchDarkMode/SwitchDarkMode2";
 
 export default function AvatarDropdown() {
   const { logout, userInformation } = useContext<AuthContextType>(AuthContext as any);
-   const handleLogout = () => {
+  const handleLogout = () => {
     logout();
   }
 
@@ -57,7 +56,7 @@ export default function AvatarDropdown() {
                     {(<>
                       <div className="flex items-center space-x-3">
                         <Avatar imgUrl={
-                          userInformation?.avatar || avatarImgs[7]
+                          userInformation?.avatar
 
                         } sizeClass="w-12 h-12" />
 

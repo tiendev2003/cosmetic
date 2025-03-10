@@ -6,13 +6,13 @@ import { Blog } from "../../types";
 
 export interface PostCardMetaProps {
   className?: string;
-  hiddenAvatar?: boolean;
+
   blog?: Blog;
 }
 
 const PostCardMeta: FC<PostCardMetaProps> = ({
   className = "leading-none",
-  hiddenAvatar = false,
+
   blog
 }) => {
   return (
@@ -24,9 +24,9 @@ const PostCardMeta: FC<PostCardMetaProps> = ({
         to={"#"}
         className="flex-shrink-0 relative flex items-center space-x-2"
       >
-        {!hiddenAvatar && (
-          <Avatar radius="rounded-full" sizeClass={"h-7 w-7 text-sm"} />
-        )}
+
+        <Avatar radius="rounded-full" sizeClass={"h-7 w-7 text-sm"} imgUrl={blog?.author?.avatar} />
+
         <span className="block text-neutral-6000 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium">
           {
             blog?.author?.username || _getPersonNameRd()

@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Link } from "react-router";
 import PostCardMeta from "../../components/PostCardMeta/PostCardMeta";
-import { _getImgRd, _getTagNameRd, _getTitleRd } from "../../contains/fakeData";
+import { _getTagNameRd, _getTitleRd } from "../../contains/fakeData";
 import Badge from "../../shared/Badge/Badge";
 import NcImage from "../../shared/NcImage/NcImage";
 import { Blog } from "../../types";
@@ -39,7 +39,6 @@ const Card3: FC<Card3Props> = ({ className = "h-full", blog }) => {
               <span className="text-neutral-500 dark:text-neutral-400 text-base line-clamp-1"
                 dangerouslySetInnerHTML={{ __html: `${blog?.content.substring(0, 200)}` }}
               >
-
               </span>
             </div>
           </div>
@@ -55,7 +54,7 @@ const Card3: FC<Card3Props> = ({ className = "h-full", blog }) => {
           className={`block w-full h-0 aspect-h-9 sm:aspect-h-16 aspect-w-16 `}
         >
           <NcImage src={
-            blog?.image || _getImgRd()
+            blog?.image  
           } containerClassName="absolute inset-0" />
         </Link>
       </div>

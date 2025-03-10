@@ -2,10 +2,9 @@ import { FC } from "react";
 import { Link } from "react-router";
 import FollowButton from "../../components/FollowButton";
 import VerifyIcon from "../../components/VerifyIcon";
-import { nftsAbstracts, personNames } from "../../contains/fakeData";
+import { personNames } from "../../contains/fakeData";
 import Avatar from "../../shared/Avatar/Avatar";
 import Badge from "../../shared/Badge/Badge";
-import NcImage from "../../shared/NcImage/NcImage";
 
 export interface CardAuthorBox4Props {
   className?: string;
@@ -36,10 +35,7 @@ const CardAuthorBox4: FC<CardAuthorBox4Props> = ({
           />
         )}
 
-        <NcImage
-          containerClassName="flex h-full w-full flex-shrink-0 rounded-3xl overflow-hidden"
-          src={nftsAbstracts[Math.floor(Math.random() * nftsAbstracts.length)]}
-        />
+       
       </div>
 
       <div className="pb-5 px-4 pt-1.5">

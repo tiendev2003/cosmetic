@@ -2,9 +2,8 @@ import { FC } from "react";
 import { Link } from "react-router";
 import FollowButton from "../../components/FollowButton";
 import VerifyIcon from "../../components/VerifyIcon";
-import { nftsAbstracts, personNames } from "../../contains/fakeData";
+import { personNames } from "../../contains/fakeData";
 import Avatar from "../../shared/Avatar/Avatar";
-import NcImage from "../../shared/NcImage/NcImage";
 
 export interface CardAuthorBox3Props {
   className?: string;
@@ -21,18 +20,7 @@ const CardAuthorBox3: FC<CardAuthorBox3Props> = ({
       data-nc-id="CardAuthorBox3"
     >
       <div className="relative flex-shrink-0 flex space-x-2 h-24">
-        <NcImage
-          containerClassName="flex flex-grow h-full rounded-xl overflow-hidden"
-          src={nftsAbstracts[Math.floor(Math.random() * nftsAbstracts.length)]}
-        />
-        <NcImage
-          containerClassName="flex h-full w-24 flex-shrink-0 rounded-xl overflow-hidden"
-          src={nftsAbstracts[Math.floor(Math.random() * nftsAbstracts.length)]}
-        />
-        <NcImage
-          containerClassName="flex flex-grow h-full rounded-xl overflow-hidden"
-          src={nftsAbstracts[Math.floor(Math.random() * nftsAbstracts.length)]}
-        />
+        
       </div>
 
       <div className="-mt-6">
